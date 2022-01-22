@@ -1,0 +1,4 @@
+{
+    "type": "KubernetesPod",
+	"id": "kube-scheduler-kind-control-plane"
+}

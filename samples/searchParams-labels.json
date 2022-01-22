@@ -1,0 +1,6 @@
+{
+    "type": "KubernetesPod",
+    "labels": {
+        "k8s-app": "kube-dns"
+    }
+}

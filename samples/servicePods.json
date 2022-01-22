@@ -1,0 +1,4 @@
+{
+  "type": "KubernetesService",
+  "id": "canary-checker"
+}

@@ -1,0 +1,6 @@
+{
+    "type": "KubernetesNode",
+    "labels": {
+        "k8s-app": "kube-dns"
+    }
+}
