@@ -9,7 +9,6 @@ import (
 var Root = &cobra.Command{
 	Use: "apm-hub",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// log = logger.GetZapLogger()
 		logger.UseZap(cmd.Flags())
 	},
 }

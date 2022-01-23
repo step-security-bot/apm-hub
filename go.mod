@@ -7,6 +7,8 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	k8s.io/api v0.20.4
+	k8s.io/apimachinery v0.20.4
 )
 
 require (
@@ -139,9 +141,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
-	k8s.io/api v0.20.4 // indirect
 	k8s.io/apiextensions-apiserver v0.20.4 // indirect
-	k8s.io/apimachinery v0.20.4 // indirect
 	k8s.io/cli-runtime v0.20.4 // indirect
 	k8s.io/client-go v11.0.0+incompatible // indirect
 	k8s.io/klog v1.0.0 // indirect
@@ -155,7 +155,6 @@ require (
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20210128214336-420b1d36250f+incompatible
-	github.com/flanksource/kommons => /Users/tarun/flanksource/kommons
 	github.com/go-logr/logr => github.com/go-logr/logr v0.2.1
 	google.golang.org/grpc => google.golang.org/grpc v1.29.1
 	k8s.io/client-go => k8s.io/client-go v0.20.4

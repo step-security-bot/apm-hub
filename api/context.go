@@ -9,5 +9,3 @@ type Context struct {
 	echo.Context
 	Kommons *kommons.Client
 }
-
-// var ctx Context

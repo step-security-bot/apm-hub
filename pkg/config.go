@@ -23,12 +23,12 @@ func ParseConfig(kommonsClient *kommons.Client, configFile string) ([]logs.Searc
 	}
 	for _, backend := range searchConfig.Backends {
 		if backend.Kubernetes != nil {
-			client, err := k8s.GetClient(kommonsClient, backend.Kubernetes)
+			client, err := k8s.GetKubeClient(kommonsClient, backend.Kubernetes)
 			if err != nil {
 				return nil, err
 			}
 			backend.Backend = &k8s.KubernetesSearch{
-				KommonsClient: client,
+				Client: client,
 			}
 		}
 		backends = append(backends, backend)

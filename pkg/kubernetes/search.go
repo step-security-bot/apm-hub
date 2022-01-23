@@ -6,31 +6,33 @@ import (
 
 	"github.com/flanksource/commons/logger"
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
-	"github.com/flanksource/kommons"
 	v1 "k8s.io/api/core/v1"
 )
 
 type KubernetesSearch struct {
-	KommonsClient *kommons.Client
+	Client *Client
 }
 
 func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err error) {
 	var pods *v1.PodList
 	var resultLabels map[string]string
+	namespace, name := s.GetNameNamespace(q)
+	fmt.Println(namespace)
+	fmt.Println(name)
 	switch {
 	case strings.Contains(strings.ToLower(q.Type), "kubernetespod"):
-		pods, err = s.KommonsClient.GetPodsWithNameAndLabels(q.Id, q.Labels)
+		pods, err = s.Client.GetPodsWithNameAndLabels(name, namespace, q.Labels)
 
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesnode"):
-		pods, err = s.KommonsClient.GetAllPodsForNode(q.Id, q.Labels)
+		pods, err = s.Client.GetAllPodsForNode(q.Id, q.Labels)
 
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesdeployment"):
-		pods, err = s.KommonsClient.GetPodsForDeployment(q.Id, q.Labels)
+		pods, err = s.Client.GetPodsForDeployment(name, namespace, q.Labels)
 		resultLabels = map[string]string{
 			"deployment": q.Id,
 		}
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesservice"):
-		pods, err = s.KommonsClient.GetPodsForService(q.Id, q.Labels)
+		pods, err = s.Client.GetPodsForService(name, namespace, q.Labels)
 		resultLabels = map[string]string{
 			"service": q.Id,
 		}
@@ -46,7 +48,7 @@ func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, e
 func (s *KubernetesSearch) getLogResultsForPods(pods *v1.PodList, resultLabels map[string]string) []logs.Result {
 	var results []logs.Result
 	for _, pod := range pods.Items {
-		podLogs, err := s.KommonsClient.GetLogsForPod(pod)
+		podLogs, err := s.Client.GetLogsForPod(pod)
 		if err != nil {
 			logger.Errorf("error fetching logs for pod: %v in namespace: %v, err: ", pod.Name, pod.Namespace, err)
 			continue
@@ -69,4 +71,22 @@ func (s *KubernetesSearch) getLogResultsForPods(pods *v1.PodList, resultLabels m
 		}
 	}
 	return results
+}
+
+
+func (s *KubernetesSearch) GetNameNamespace(q *logs.SearchParams) (namespace, name string) {
+	if strings.Contains(q.Id, "/"){
+		// namespace is provided as a prefix in the ID
+		namespaceName := strings.Split(q.Id, "/")
+		if len(namespaceName) < 2 {
+			logger.Errorf("expected id in format <namespace>/<name>")
+			return "", ""
+		}
+		return namespaceName[0], namespaceName[1]
+	}
+	// namespace is provided in the labels. if no label is there we just return the empty string which extends the search to all namespaces
+	namespace = q.Labels["namespace"]
+	// deleting namespace label from the map so it doesn't filter out the result based on the namespace label
+	delete(q.Labels, "namespace")
+	return q.Id, namespace
 }

@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"fmt"
+	"github.com/flanksource/commons/logger"
 	"net/http"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api"
@@ -16,19 +16,12 @@ func Search(c echo.Context) error {
 	if err != nil {
 		cc.Error(err)
 	}
-	// fmt.Println(searchParams)
-	// if strings.HasPrefix(strings.ToLower(searchParams.Type), "kubernetes") {
-	// 	_, err := k8s.Search(searchParams)
-	// 	if err != nil {
-	// 		return c.String(http.StatusInternalServerError, err.Error())
-	// 	}
-	// }
 	var searchResults []logs.SearchResults
 	for _, backend := range logs.GlobalBackends {
-		fmt.Println("executing")
 		searchResult, err := backend.Backend.Search(searchParams)
 		if err != nil {
-			fmt.Println(err)
+			logger.Errorf("error executing error: %v", err)
+			continue
 		}
 		searchResults = append(searchResults, searchResult)
 	}

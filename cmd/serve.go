@@ -18,7 +18,6 @@ import (
 var Serve = &cobra.Command{
 	Use:   "serve config.yaml",
 	Short: "Start the for querying the logs",
-	// Args:  cobra.MinimumNArgs(1),
 	Run: runServe,
 }
 
@@ -34,7 +33,6 @@ func runServe(cmd *cobra.Command, configFiles []string) {
 				logger.Errorf("error parsing the configFile: %v", err)
 				continue
 			}
-			fmt.Println(backends)
 			logs.GlobalBackends = append(logs.GlobalBackends, backends...)
 		}
 	}
