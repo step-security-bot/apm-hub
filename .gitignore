@@ -1,2 +1,7 @@
+##IDEs
 .idea
 .vscode
+
+#Build
+.bin/
+.release
