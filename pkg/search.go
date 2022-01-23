@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/flanksource/commons/logger"
+	"github.com/flanksource/commons/timer"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api"
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
@@ -17,6 +18,16 @@ func Search(c echo.Context) error {
 	if err != nil {
 		cc.Error(err)
 	}
+	if searchParams.Start == "" {
+		searchParams.Start = "1h"
+	}
+	if searchParams.LimitPerItem == 0 {
+		searchParams.LimitPerItem = 100
+	}
+	if searchParams.LimitBytesPerItem == 0 {
+		searchParams.LimitBytesPerItem = 100 * 1024
+	}
+	timer := timer.NewTimer()
 	var searchResults []logs.SearchResults
 	for _, backend := range logs.GlobalBackends {
 		searchResult, err := backend.Backend.Search(searchParams)
@@ -26,5 +37,6 @@ func Search(c echo.Context) error {
 		}
 		searchResults = append(searchResults, searchResult)
 	}
+	logger.Infof("[%s] => %d results in %s", searchParams, len(searchResults), timer)
 	return cc.JSON(http.StatusOK, searchResults)
 }

@@ -2,11 +2,10 @@ package kubernetes
 
 import (
 	"bufio"
-	"container/list"
+	"bytes"
 	"context"
 	"fmt"
-	"sync"
-	"time"
+	"strings"
 
 	"github.com/flanksource/commons/logger"
 	appsv1 "k8s.io/api/apps/v1"
@@ -165,54 +164,55 @@ func (c *Client) GetPodsForService(name, namespace string, labels map[string]str
 	return
 }
 
-func (c *Client) GetLogsForPod(pod v1.Pod) (map[string]string, error) {
-	containerLogs := make(map[string]string)
-	c.Tracef("Waiting for %s/%s to be running", pod.Namespace, pod.Name)
-	if err := c.WaitForContainerStart(pod.Namespace, pod.Name, 5*time.Second); err != nil {
-		return nil, err
+func getLogResult(line string) logs.Result {
+	timestamp := strings.Split(line, " ")[0]
+	return logs.Result{
+		Time:    timestamp,
+		Message: strings.TrimPrefix(line, timestamp),
 	}
+}
+
+func (c *Client) GetLogsForPod(q *logs.SearchParams, pod v1.Pod) (map[string][]logs.Result, error) {
+	containerLogs := make(map[string][]logs.Result)
 	client, err := c.GetClientset()
 	if err != nil {
 		return nil, err
 	}
 	pods := client.CoreV1().Pods(pod.Namespace)
-	var wg sync.WaitGroup
-	var containers = list.New()
 
 	for _, container := range append(pod.Spec.Containers, pod.Spec.InitContainers...) {
-		containers.PushBack(container)
-	}
-	// Loop over container list.
-	for element := containers.Front(); element != nil; element = element.Next() {
-		var logsPod string
-		container := element.Value.(v1.Container)
-		logs := pods.GetLogs(pod.Name, &v1.PodLogOptions{
-			Container: container.Name,
-		})
+		options := &v1.PodLogOptions{
+			Container:  container.Name,
+			Follow:     false,
+			Timestamps: true,
+		}
 
-		podLogs, err := logs.Stream(context.TODO())
+		if q.LimitPerItem > 0 {
+			options.TailLines = &q.LimitPerItem
+		} else if q.Limit > 0 {
+			options.TailLines = &q.Limit
+		}
+		if q.LimitBytesPerItem > 0 {
+			options.LimitBytes = &q.LimitBytesPerItem
+		} else if q.LimitBytes > 0 {
+			options.LimitBytes = &q.LimitBytes
+		}
+		start := q.GetStart()
+		if start != nil {
+			options.SinceTime = &metav1.Time{*start}
+		}
+
+		podLogs, err := pods.GetLogs(pod.Name, options).Do(context.TODO()).Raw()
 		if err != nil {
-			containers.PushBack(container)
 			logger.Tracef("failed to begin streaming %s/%s: %s", pod.Name, container.Name, err)
-			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		wg.Add(1)
-		go func() {
-			defer podLogs.Close()
-			defer wg.Done()
-
-			scanner := bufio.NewScanner(podLogs)
-			for scanner.Scan() {
-				incoming := scanner.Bytes()
-				buffer := make([]byte, len(incoming))
-				copy(buffer, incoming)
-				logsPod = logsPod + fmt.Sprintf("%s\n", string(buffer))
-			}
-			containerLogs[container.Name] = logsPod
-		}()
-		fmt.Println(logsPod)
+		scanner := bufio.NewScanner(bytes.NewReader(podLogs))
+		var lines []logs.Result
+		for scanner.Scan() {
+			lines = append(lines, getLogResult(scanner.Text()))
+		}
+		containerLogs[container.Name] = lines
 	}
-	wg.Wait()
 	return containerLogs, nil
 }

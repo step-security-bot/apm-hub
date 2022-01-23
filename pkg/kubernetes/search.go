@@ -13,12 +13,18 @@ type KubernetesSearch struct {
 	Client *Client
 }
 
+func podNames(list *v1.PodList) []string {
+	var names []string
+	for _, pod := range list.Items {
+		names = append(names, pod.Name)
+	}
+	return names
+}
 func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err error) {
 	var pods *v1.PodList
 	var resultLabels map[string]string
 	namespace, name := s.GetNameNamespace(q)
-	fmt.Println(namespace)
-	fmt.Println(name)
+	logger.Debugf("searching %s namespace=%s name=%s", q, namespace, name)
 	switch {
 	case strings.Contains(strings.ToLower(q.Type), "kubernetespod"):
 		pods, err = s.Client.GetPodsWithNameAndLabels(name, namespace, q.Labels)
@@ -37,18 +43,24 @@ func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, e
 			"service": q.Id,
 		}
 	}
+
 	if err != nil {
-		return r, fmt.Errorf("error fetching the pods for node %v: %v", q.Id, err)
+		return r, fmt.Errorf("error fetching the pods for node %v: %v", q, err)
 	}
-	r.Results = s.getLogResultsForPods(pods, resultLabels)
+	if len(pods.Items) == 0 {
+		logger.Debugf("[%s] no pods found", q)
+		return r, nil
+	}
+	logger.Tracef("[%s] searching in pods %s ", q, podNames(pods))
+	r.Results = s.getLogResultsForPods(q, pods, resultLabels)
 	r.Total = len(r.Results)
-	return
+	return r, nil
 }
 
-func (s *KubernetesSearch) getLogResultsForPods(pods *v1.PodList, resultLabels map[string]string) []logs.Result {
+func (s *KubernetesSearch) getLogResultsForPods(q *logs.SearchParams, pods *v1.PodList, resultLabels map[string]string) []logs.Result {
 	var results []logs.Result
 	for _, pod := range pods.Items {
-		podLogs, err := s.Client.GetLogsForPod(pod)
+		podLogs, err := s.Client.GetLogsForPod(q, pod)
 		if err != nil {
 			logger.Errorf("error fetching logs for pod: %v in namespace: %v, err: ", pod.Name, pod.Namespace, err)
 			continue
@@ -63,11 +75,10 @@ func (s *KubernetesSearch) getLogResultsForPods(pods *v1.PodList, resultLabels m
 			for k, v := range resultLabels {
 				labels[k] = v
 			}
-			results = append(results, logs.Result{
-				Id:      pod.Name,
-				Message: containerLogs,
-				Labels:  labels,
-			})
+			for _, line := range containerLogs {
+				line.Labels = labels
+				results = append(results, line)
+			}
 		}
 	}
 	return results
@@ -87,5 +98,5 @@ func (s *KubernetesSearch) GetNameNamespace(q *logs.SearchParams) (namespace, na
 	namespace = q.Labels["namespace"]
 	// deleting namespace label from the map so it doesn't filter out the result based on the namespace label
 	delete(q.Labels, "namespace")
-	return q.Id, namespace
+	return namespace, q.Id
 }
