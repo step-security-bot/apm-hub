@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"github.com/flanksource/commons/logger"
 	"net/http"
+
+	"github.com/flanksource/commons/logger"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api"
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"

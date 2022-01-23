@@ -73,9 +73,8 @@ func (s *KubernetesSearch) getLogResultsForPods(pods *v1.PodList, resultLabels m
 	return results
 }
 
-
 func (s *KubernetesSearch) GetNameNamespace(q *logs.SearchParams) (namespace, name string) {
-	if strings.Contains(q.Id, "/"){
+	if strings.Contains(q.Id, "/") {
 		// namespace is provided as a prefix in the ID
 		namespaceName := strings.Split(q.Id, "/")
 		if len(namespaceName) < 2 {

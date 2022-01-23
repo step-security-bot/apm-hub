@@ -5,12 +5,13 @@ import (
 	"container/list"
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/flanksource/commons/logger"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sync"
-	"time"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
 	"github.com/flanksource/kommons"
@@ -34,7 +35,6 @@ func GetKubeClient(kommonsClient *kommons.Client, kubernetesSeachBackend *logs.K
 	}
 	return &Client{kommonsClient}, nil
 }
-
 
 func (c *Client) GetAllPodsForNode(nodeName string, labels map[string]string) (pods *v1.PodList, err error) {
 	client, err := c.GetClientset()

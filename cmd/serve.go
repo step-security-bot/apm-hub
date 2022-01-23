@@ -18,7 +18,7 @@ import (
 var Serve = &cobra.Command{
 	Use:   "serve config.yaml",
 	Short: "Start the for querying the logs",
-	Run: runServe,
+	Run:   runServe,
 }
 
 func runServe(cmd *cobra.Command, configFiles []string) {
