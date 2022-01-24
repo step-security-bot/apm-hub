@@ -77,7 +77,10 @@ func (s *KubernetesSearch) getLogResultsForPods(q *logs.SearchParams, pods *v1.P
 			}
 			for _, line := range containerLogs {
 				line.Labels = labels
-				results = append(results, line)
+				line = line.Process()
+				if line.Message != "" {
+					results = append(results, line)
+				}
 			}
 		}
 	}

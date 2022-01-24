@@ -1,7 +1,9 @@
 package logs
 
 import (
+	"bufio"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/flanksource/kommons"
@@ -130,6 +132,23 @@ type Result struct {
 	Time    string            `json:"timestamp,omitempty"`
 	Message string            `json:"message,omitempty"`
 	Labels  map[string]string `json:"labels,omitempty"`
+}
+
+func (r Result) Process() Result {
+	scanner := bufio.NewScanner(strings.NewReader(r.Message))
+	scanner.Split(bufio.ScanWords)
+	if scanner.Scan() {
+		timestamp := scanner.Text()
+		if _, err := time.Parse(time.RFC3339, timestamp); err == nil {
+			r.Time = timestamp
+			r.Message = strings.ReplaceAll(r.Message, timestamp, "")
+			fmt.Println(r.Message)
+		} else {
+			fmt.Printf("error parsing timestamp %s: %v\n", timestamp, err)
+		}
+	}
+	r.Message = strings.TrimSpace(r.Message)
+	return r
 }
 
 type SearchAPI interface {
