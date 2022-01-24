@@ -1,0 +1,7 @@
+{
+  "type": "KubernetesService",
+  "id": "canary-checker",
+  "labels": {
+    "namespace": "canary-checker"
+  }
+}
