@@ -1,0 +1,6 @@
+namespace: apm-hub
+resources:
+ - "namespace.yaml"
+ - "rbac.yaml"
+ - "manager.yaml"
+ - "config.yaml"
