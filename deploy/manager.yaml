@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apm-hub
+  labels:
+    control-plane: apm-hub
+spec:
+  selector:
+    matchLabels:
+      control-plane: apm-hub
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: apm-hub
+    spec:
+      serviceAccountName: apm-hub-sa
+      volumes:
+        - name: config
+          configMap:
+            name: apm-hub-config
+      containers:
+        - name: apm-hub
+          image: docker.io/flanksource/apm-hub:latest
+          volumeMounts:
+          - name: config
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+          command:
+            - /app/apm-hub
+          args:
+            - serve
+            - -vvv
+            - /app/config.yaml
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              memory: 512Mi
+              cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: apm-hub
+  name: apm-hub
+  namespace: apm-hub
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    control-plane: apm-hub
