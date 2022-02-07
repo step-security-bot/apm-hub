@@ -47,7 +47,7 @@ func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, e
 	if err != nil {
 		return r, fmt.Errorf("error fetching the pods for node %v: %v", q, err)
 	}
-	if len(pods.Items) == 0 {
+	if pods == nil || len(pods.Items) == 0 {
 		logger.Debugf("[%s] no pods found", q)
 		return r, nil
 	}

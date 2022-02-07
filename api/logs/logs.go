@@ -125,6 +125,11 @@ type SearchResults struct {
 	NextPage string   `json:"nextPage,omitempty"`
 }
 
+func (r *SearchResults) Append(other *SearchResults) {
+	r.Results = append(r.Results, other.Results...)
+	r.Total += other.Total
+}
+
 type Result struct {
 	// Id is the unique identifier provided by the underlying system, use to link to a point in time of a log stream
 	Id string `json:"id,omitempty"`
@@ -142,9 +147,6 @@ func (r Result) Process() Result {
 		if _, err := time.Parse(time.RFC3339, timestamp); err == nil {
 			r.Time = timestamp
 			r.Message = strings.ReplaceAll(r.Message, timestamp, "")
-			fmt.Println(r.Message)
-		} else {
-			fmt.Printf("error parsing timestamp %s: %v\n", timestamp, err)
 		}
 	}
 	r.Message = strings.TrimSpace(r.Message)

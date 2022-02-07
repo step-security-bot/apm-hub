@@ -28,15 +28,15 @@ func Search(c echo.Context) error {
 		searchParams.LimitBytesPerItem = 100 * 1024
 	}
 	timer := timer.NewTimer()
-	var searchResults []logs.SearchResults
+	results := &logs.SearchResults{}
 	for _, backend := range logs.GlobalBackends {
 		searchResult, err := backend.Backend.Search(searchParams)
 		if err != nil {
 			logger.Errorf("error executing error: %v", err)
 			continue
 		}
-		searchResults = append(searchResults, searchResult)
+		results.Append(&searchResult)
 	}
-	logger.Infof("[%s] => %d results in %s", searchParams, len(searchResults), timer)
-	return cc.JSON(http.StatusOK, searchResults)
+	logger.Infof("[%s] => %d results in %s", searchParams, results.Total, timer)
+	return cc.JSON(http.StatusOK, *results)
 }
