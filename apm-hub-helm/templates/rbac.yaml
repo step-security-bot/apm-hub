@@ -1,0 +1,53 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "apm-hub.serviceAccountName" . }}
+  labels:
+    {{- include "apm-hub.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: {{ include "apm-hub.fullname" . }}-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "services"
+      - "namespaces"
+      - "nodes"
+      - "pods"
+      - "pods/log"
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "apps"
+      - "extensions"
+    resources:
+      - "deployments"
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "apm-hub.fullname" . }}-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "apm-hub.fullname" . }}-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "apm-hub.serviceAccountName" . }}
