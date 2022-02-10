@@ -48,7 +48,7 @@ Selector labels
 {{- define "apm-hub.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "apm-hub.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-control-plane: {{ .Values.deployment.label }}
+control-plane: {{ .Chart.Name }}
 {{- end }}
 
 {{/*
