@@ -20,10 +20,7 @@ serviceAccount:
   annotations: {}
 
 service:
-  type: ClusterIP
   port: 8080
-  targetPort: 8080
-  protocol: TCP
 
 configYaml: |
   backends:
