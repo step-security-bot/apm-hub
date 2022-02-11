@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "apm-hub.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "apm-hub.selectorLabels" . | nindent 6 }}
