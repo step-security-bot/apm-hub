@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "apm-hub.fullname" . }}
+  name: {{ include "apm-hub.name" . }}
   labels:
     {{- include "apm-hub.labels" . | nindent 4 }}
 spec:

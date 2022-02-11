@@ -4,6 +4,8 @@
 
 replicaCount: 1
 
+nameOverride: ""
+
 deployment:
   label: apm-hub
 
@@ -14,8 +16,6 @@ image:
   tag: "latest"
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: "apm-hub"
 
 serviceAccount:
   # Specifies whether a service account should be created
