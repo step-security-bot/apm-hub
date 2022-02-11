@@ -15,12 +15,9 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-imagePullSecrets: []
-
 serviceAccount:
   # Annotations to add to the service account
   annotations: {}
-
 
 service:
   type: ClusterIP
@@ -65,6 +62,7 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 extras:
+  imagePullSecrets: []
   podAnnotations: {}
   podSecurityContext: {}
     # fsGroup: 2000
