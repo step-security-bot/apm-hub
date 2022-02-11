@@ -24,7 +24,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "apm-hub.serviceAccountName" . }}
+      serviceAccountName: {{ include "apm-hub.name" . }}-sa
       securityContext:
         {{- toYaml .Values.extras.podSecurityContext | nindent 8 }}
       containers:

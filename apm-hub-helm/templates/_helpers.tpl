@@ -33,14 +33,3 @@ app.kubernetes.io/name: {{ include "apm-hub.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 control-plane: {{ .Chart.Name }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "apm-hub.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "apm-hub.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
