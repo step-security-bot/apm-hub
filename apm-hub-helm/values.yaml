@@ -19,9 +19,6 @@ serviceAccount:
   # Annotations to add to the service account
   annotations: {}
 
-service:
-  port: 8080
-
 configYaml: |
   backends:
     - kubernetes:
