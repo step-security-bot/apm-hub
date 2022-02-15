@@ -23,12 +23,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "apm-hub.name" . }}-sa
-      securityContext:
-        {{- toYaml .Values.extras.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.extras.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
@@ -43,17 +39,8 @@ spec:
             - serve
             - -vvv
             - /app/config.yaml
-      {{- with .Values.extras.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.extras.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.extras.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- with .Values.extra }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
       volumes:
         - name: config
