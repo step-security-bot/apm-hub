@@ -6,9 +6,6 @@ replicaCount: 1
 
 nameOverride: ""
 
-deployment:
-  label: apm-hub
-
 image:
   repository: docker.io/flanksource/apm-hub
   pullPolicy: IfNotPresent
