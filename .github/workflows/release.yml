@@ -57,3 +57,27 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           snapshot: true
           tags: "latest,v${{ needs.semantic-release.outputs.release-version }}"
+  helm:
+    runs-on: ubuntu-latest
+    needs: semantic-release
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download yq
+        run: |
+          wget -nv -nc -O yq https://github.com/mikefarah/yq/releases/download/v4.17.2/yq_amd64
+          chmod +x yq
+      - name: Update chart version
+        run: ./yq -i e '.version = "${{ needs.semantic-release.outputs.release-version }}"' Chart.yaml
+      - name: Update app version
+        run: ./yq -i e '.appVersion = "${{ needs.semantic-release.outputs.release-version }}"' Chart.yaml
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.8.0
+       - name: Publish chart
+         uses: helm/chart-releaser-action@v1.3.0
+         with:
+           charts_repo_url: https://flanksource.github.io/charts
+           charts_dir: chart
+         env:
+           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
