@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Download yq
         run: |
-          wget -nv -nc -O yq https://github.com/mikefarah/yq/releases/download/v4.17.2/yq_amd64
+          wget -nv -nc -O yq https://github.com/mikefarah/yq/releases/download/v4.20.2/yq_linux_amd64
           chmod +x yq
       - name: Update chart version
         run: ./yq -i e '.version = "${{ needs.semantic-release.outputs.release-version }}"' Chart.yaml
