@@ -74,10 +74,10 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.8.0
-       - name: Publish chart
-         uses: helm/chart-releaser-action@v1.3.0
-         with:
-           charts_repo_url: https://flanksource.github.io/charts
-           charts_dir: chart
-         env:
-           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Publish chart
+        uses: helm/chart-releaser-action@v1.3.0
+        with:
+          charts_repo_url: https://flanksource.github.io/charts
+          charts_dir: chart
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
