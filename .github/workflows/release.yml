@@ -76,11 +76,23 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.8.0
-      - name: Publish chart
-        uses: helm/chart-releaser-action@v1.3.0
+      - name: Package Helm chart
+        run: |
+          helm package ./chart
+      - name: Clone charts repo
+        uses: GuillaumeFalourd/clone-github-repo-action@v1
         with:
-          charts_repo_url: https://flanksource.github.io/charts
-          charts_dir: chart
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_SKIP_EXISTING: "false"
+          owner: "${{ github.repository_owner }}"
+          repository: "charts"
+      - name: Update chart repo
+        run: |
+          cd charts
+          mv ../apm-hub-*.tgz ./
+          helm repo index --merge index.yaml .
+      - name: Push changes to chart repo
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Release ${{ needs.semantic-release.outputs.release-version }} of ${{ github.repository }}"
+          branch: gh-pages
+          repository: ./charts
+
