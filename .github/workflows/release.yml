@@ -86,9 +86,9 @@ jobs:
           repository: "charts"
       - name: Update chart repo
         run: |
-          ls -la
+          # Work-around for https://github.com/GuillaumeFalourd/clone-github-repo-action/issues/1
+          sudo chown -R runner:docker ./charts
           cd charts
-          ls -la
           cp ../apm-hub-*.tgz ./
           helm repo index --merge index.yaml .
       - name: Push changes to chart repo
