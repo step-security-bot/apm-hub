@@ -48,7 +48,7 @@ jobs:
     needs: semantic-release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
@@ -80,14 +80,12 @@ jobs:
         run: |
           helm package ./chart
       - name: Clone charts repo
-        uses: GuillaumeFalourd/clone-github-repo-action@v1
+        uses: actions/checkout@v3
         with:
-          owner: "${{ github.repository_owner }}"
-          repository: "charts"
+          repository: "${{ github.repository_owner }}/charts"
+          path: charts
       - name: Update chart repo
         run: |
-          # Work-around for https://github.com/GuillaumeFalourd/clone-github-repo-action/issues/1
-          sudo chown -R runner:docker ./charts
           cd charts
           cp ../apm-hub-*.tgz ./
           helm repo index --merge index.yaml .
