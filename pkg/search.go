@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Search and collate logs 
 func Search(c echo.Context) error {
 	cc := c.(*api.Context)
 	searchParams := new(logs.SearchParams)
