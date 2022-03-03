@@ -86,7 +86,9 @@ jobs:
           repository: "charts"
       - name: Update chart repo
         run: |
+          ls -la
           cd charts
+          ls -la
           cp ../apm-hub-*.tgz ./
           helm repo index --merge index.yaml .
       - name: Push changes to chart repo
