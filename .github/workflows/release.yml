@@ -84,6 +84,7 @@ jobs:
         with:
           repository: "${{ github.repository_owner }}/charts"
           path: charts
+          token: "${{ secrets.FLANKBOT }}"
       - name: Update chart repo
         run: |
           cd charts
