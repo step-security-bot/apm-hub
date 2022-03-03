@@ -87,7 +87,7 @@ jobs:
       - name: Update chart repo
         run: |
           cd charts
-          mv ../apm-hub-*.tgz ./
+          cp ../apm-hub-*.tgz ./
           helm repo index --merge index.yaml .
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
