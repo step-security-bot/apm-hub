@@ -48,3 +48,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "apm-hub.name" . }}-sa
+    namespace: {{ .Release.Namespace }}
