@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "apm-hub.name" . }}-sa
+  name: {{ include "apm-hub.fullname" . }}-sa
   labels:
     {{- include "apm-hub.labels" . | nindent 4 }}
   {{- with .Values.serviceAccount.annotations }}
@@ -40,11 +40,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "apm-hub.name" . }}-rolebinding
+  name: {{ include "apm-hub.fullname" . }}-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ include "apm-hub.name" . }}-role
 subjects:
   - kind: ServiceAccount
-    name: {{ include "apm-hub.name" . }}-sa
+    name: {{ include "apm-hub.fullname" . }}-sa
+    namespace: {{ .Release.Namespace }}
