@@ -14,7 +14,7 @@ spec:
       labels:
         {{- include "apm-hub.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "apm-hub.name" . }}-sa
+      serviceAccountName: {{ include "apm-hub.fullname" . }}-sa
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
