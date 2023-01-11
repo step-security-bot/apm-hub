@@ -1,3 +1,10 @@
 backends:
   - kubernetes:
       kubeconfig:
+
+  - file:
+      - labels:
+          name: acmehost
+          type: Nginx
+        path:
+          - /var/local/cyza/nginx/log/access.log
