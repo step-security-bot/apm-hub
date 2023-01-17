@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
 )
@@ -21,9 +22,9 @@ func (t *FileSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err err
 			continue
 		}
 
-		files, err := readFileLines(b.Paths)
+		files, err := readFilesLines(b.Paths)
 		if err != nil {
-			return res, fmt.Errorf("readFileLines(); %w", err)
+			return res, fmt.Errorf("readFilesLines(); %w", err)
 		}
 
 		for _, content := range files {
@@ -31,28 +32,30 @@ func (t *FileSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err err
 		}
 	}
 
-	// TODO: Need to implement pagination but is it per file?
-
 	return res, nil
 }
 
 type logsPerFile map[string][]logs.Result
 
-// readFileLines will take a list of file paths
+// readFilesLines will take a list of file paths
 // and then return each lines of those files.
-func readFileLines(paths []string) (logsPerFile, error) {
+func readFilesLines(paths []string) (logsPerFile, error) {
 	fileContents := make(logsPerFile, len(paths))
 	for _, path := range paths {
-		content, err := os.Open(path)
+		fInfo, err := os.Stat(path)
 		if err != nil {
-			return nil, fmt.Errorf("error reading file_path=%s; %w", path, err)
+			return nil, fmt.Errorf("error get file stat. path=%s; %w", path, err)
 		}
 
-		scanner := bufio.NewScanner(content)
+		file, err := os.Open(path)
+		if err != nil {
+			return nil, fmt.Errorf("error opening file. path=%s; %w", path, err)
+		}
+
+		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			fileContents[path] = append(fileContents[path], logs.Result{
-				// Id: , guess I can ignore the Id at this stage
-				// Time: , not sure how to reliably get the time here. This varies based on the log type.
+				Time: fInfo.ModTime().Format(time.RFC3339),
 				// Labels: , all the records will have the same labels. Is it necessary to add it here?
 				Message: strings.TrimSpace(scanner.Text()),
 			})
