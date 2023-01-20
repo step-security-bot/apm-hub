@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
 	"github.com/flanksource/flanksource-ui/apm-hub/pkg/files"
@@ -36,6 +37,16 @@ func ParseConfig(kommonsClient *kommons.Client, configFile string) ([]logs.Searc
 		}
 
 		if len(backend.Files) != 0 {
+			// If the paths are not absolute,
+			// They should be parsed with respect to the provided config file
+			for i, f := range backend.Files {
+				for j, p := range f.Paths {
+					if !filepath.IsAbs(p) {
+						backend.Files[i].Paths[j] = filepath.Join(filepath.Dir(configFile), p)
+					}
+				}
+			}
+
 			backend.Backend = &files.FileSearch{
 				FilesBackend: backend.Files,
 			}

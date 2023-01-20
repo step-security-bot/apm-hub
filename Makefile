@@ -42,3 +42,7 @@ binaries: linux darwin windows compress
 release: binaries
 	mkdir -p .release
 	cp .bin/$(NAME)* .release/
+
+.PHONY: integration
+integration:
+	go test --tags=integration ./... -count=1 -v
