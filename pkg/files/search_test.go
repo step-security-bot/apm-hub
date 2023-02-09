@@ -1,4 +1,4 @@
-//go:build integration
+// go:build integration
 
 package files_test
 
@@ -14,11 +14,11 @@ import (
 	"github.com/flanksource/flanksource-ui/apm-hub/api/logs"
 	"github.com/flanksource/flanksource-ui/apm-hub/cmd"
 	"github.com/flanksource/flanksource-ui/apm-hub/pkg"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFileSearch(t *testing.T) {
 	confPath := "../../samples/config-file.yaml"
-
 	backend, err := pkg.ParseConfig(nil, confPath)
 	if err != nil {
 		t.Fatal("Fail to parse the config file", err)
@@ -48,7 +48,8 @@ func TestFileSearch(t *testing.T) {
 		t.Fatal("Failed to decode the search result")
 	}
 
-	nginxLogFile, err := os.Open("../../samples/nginx-access.log")
+	filePath := "../../samples/nginx-access.log"
+	nginxLogFile, err := os.Open(filePath)
 	if err != nil {
 		t.Fatal("Fail to read nginx log", err)
 	}
@@ -63,9 +64,15 @@ func TestFileSearch(t *testing.T) {
 		t.Fatalf("Expected [%d] lines but got [%d]", len(lines), len(res.Results))
 	}
 
-	for i := range res.Results {
-		if res.Results[i].Message != lines[i] {
-			t.Fatalf("Incorrect line [%d]. Expected %s got %s", i+1, lines[i], res.Results[i].Message)
+	for i, r := range res.Results {
+		if r.Message != lines[i] {
+			t.Fatalf("Incorrect line [%d]. Expected %s got %s", i+1, lines[i], r.Message)
 		}
+
+		assert.Equal(t, r.Labels, map[string]string{
+			"filepath": filePath,
+			"name":     "acmehost",
+			"type":     "Nginx",
+		})
 	}
 }
