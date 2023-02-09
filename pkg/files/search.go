@@ -3,6 +3,7 @@ package files
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -37,7 +38,7 @@ type logsPerFile map[string][]logs.Result
 // If labels are also passed, it'll attach those labels to each lines of those files.
 func readFilesLines(paths []string, labelsToAttach map[string]string) logsPerFile {
 	fileContents := make(logsPerFile, len(paths))
-	for _, path := range paths {
+	for _, path := range unfoldGlobs(paths) {
 		fInfo, err := os.Stat(path)
 		if err != nil {
 			logger.Warnf("error get file stat. path=%s; %w", path, err)
@@ -51,7 +52,7 @@ func readFilesLines(paths []string, labelsToAttach map[string]string) logsPerFil
 		}
 
 		// All lines of the same file will share these labels
-		labels := mergeMap(map[string]string{"path": path}, labelsToAttach)
+		labels := MergeMap(map[string]string{"path": path}, labelsToAttach)
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -76,12 +77,27 @@ func matchQueryLabels(want, have map[string]string) bool {
 	return true
 }
 
-// mergeMap will merge map b into a.
+// MergeMap will merge map b into a.
 // On key collision, map b takes precedence.
-func mergeMap(a, b map[string]string) map[string]string {
+func MergeMap(a, b map[string]string) map[string]string {
 	for k, v := range b {
 		a[k] = v
 	}
 
 	return a
+}
+
+func unfoldGlobs(paths []string) []string {
+	unfoldedPaths := make([]string, 0, len(paths))
+	for _, path := range paths {
+		matched, err := filepath.Glob(path)
+		if err != nil {
+			logger.Warnf("invalid glob pattern. path=%s; %w", path, err)
+			continue
+		}
+
+		unfoldedPaths = append(unfoldedPaths, matched...)
+	}
+
+	return unfoldedPaths
 }

@@ -63,7 +63,7 @@ func Test_mergeMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeMap(tt.args.a, tt.args.b); !reflect.DeepEqual(got, tt.want) {
+			if got := MergeMap(tt.args.a, tt.args.b); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("mergeMap() = %v, want %v", got, tt.want)
 			}
 		})
