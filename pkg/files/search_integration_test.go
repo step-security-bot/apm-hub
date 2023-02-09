@@ -70,9 +70,9 @@ func TestFileSearch(t *testing.T) {
 		}
 
 		assert.Equal(t, r.Labels, map[string]string{
-			"filepath": filePath,
-			"name":     "acmehost",
-			"type":     "Nginx",
+			"path": filePath,
+			"name": "acmehost",
+			"type": "Nginx",
 		})
 	}
 }

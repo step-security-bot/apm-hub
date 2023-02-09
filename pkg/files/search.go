@@ -51,7 +51,7 @@ func readFilesLines(paths []string, labelsToAttach map[string]string) logsPerFil
 		}
 
 		// All lines of the same file will share these labels
-		labels := mergeMap(map[string]string{"filepath": path}, labelsToAttach)
+		labels := mergeMap(map[string]string{"path": path}, labelsToAttach)
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
