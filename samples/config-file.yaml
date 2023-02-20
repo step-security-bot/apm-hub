@@ -1,0 +1,12 @@
+backends:
+  - file:
+      - labels:
+          name: acmehost
+          type: Nginx
+        path:
+          - nginx-access.log
+      - labels:
+          name: all
+          type: Nginx
+        path:
+          - "*.log"

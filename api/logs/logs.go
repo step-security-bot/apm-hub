@@ -19,6 +19,7 @@ type SearchBackend struct {
 	Routes     []SearchRoute            `json:"routes,omitempty"`
 	Backend    SearchAPI                `json:"-"`
 	Kubernetes *KubernetesSearchBackend `json:"kubernetes,omitempty"`
+	Files      []FileSearchBackend      `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type SearchRoute struct {
@@ -32,6 +33,11 @@ type KubernetesSearchBackend struct {
 	Kubeconfig *kommons.EnvVar `json:"kubeconfig,omitempty"`
 	//namespace to search the kommons.EnvVar in
 	Namespace string `json:"namespace,omitempty"`
+}
+
+type FileSearchBackend struct {
+	Labels map[string]string `yaml:"labels,omitempty"`
+	Paths  []string          `yaml:"path,omitempty"`
 }
 
 type SearchParams struct {
