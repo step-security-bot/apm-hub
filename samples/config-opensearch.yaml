@@ -1,0 +1,42 @@
+backends:
+  - opensearch:
+      routes:
+        - type: "elastic"
+          labels:
+            app: "frontend,backend"
+          idPrefix: "elastic"
+          additive: true
+        - type: "opensearch"
+          idPrefix: "opensearch"
+          labels:
+            app: "!backend"
+      address: "https://logs.example.com"
+      namespace: "kube"
+      fields:
+        message: "message"
+        timestamp: "@timestamp"
+        exclusions:
+          - "log"
+      username:
+        value: "elastic"
+      password:
+        value: "abcdefghijklmnopqrstuvwxyz"
+      index: "my-index-*"
+      query: |
+        {
+          {{if .Page}}"search_after": {{ .Page }},{{end}}
+          "sort": [{ "@timestamp": { "order": "desc", "unmapped_type": "boolean" } }],
+          "query": {
+            "bool": {
+              "filter": [
+                {"match_phrase": {"transaction.client_ip": "{{index .Labels "clientIP"}}" }},
+                {"match_phrase": {"transaction.request.uri": "{{index .Labels "requestURI"}}" }},
+                {"range": {"@timestamp": {"gte": "{{.GetStartISO}}", "lte": "2023-03-09T12:29:11.828Z", "format": "strict_date_optional_time"}}}
+              ],
+              "must_not":[
+                {"match_phrase": { "agent.name": "nginx-ingress-controller-f6zx7" }},
+                {"match_phrase": { "agent.name": "nginx-ingress-controller-r46vg" }}
+              ]
+            }
+          }
+        }

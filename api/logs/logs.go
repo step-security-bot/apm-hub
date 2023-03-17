@@ -6,38 +6,120 @@ import (
 	"strings"
 	"time"
 
+	"github.com/flanksource/commons/collections"
+	durationUtil "github.com/flanksource/commons/duration"
 	"github.com/flanksource/kommons"
 )
 
 var GlobalBackends []SearchBackend
 
 type SearchConfig struct {
+	// Path is the path of this config file
+	Path     string          `yaml:"-"`
 	Backends []SearchBackend `yaml:"backends,omitempty"`
 }
 
 type SearchBackend struct {
-	Routes     []SearchRoute            `json:"routes,omitempty"`
-	Backend    SearchAPI                `json:"-"`
-	Kubernetes *KubernetesSearchBackend `json:"kubernetes,omitempty"`
-	Files      []FileSearchBackend      `json:"file,omitempty" yaml:"file,omitempty"`
+	Backend       SearchAPI                   `json:"-"`
+	ElasticSearch *ElasticSearchBackendConfig `json:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig    `json:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackend    `json:"kubernetes,omitempty"`
+	Files         []FileSearchBackendConfig   `json:"file,omitempty" yaml:"file,omitempty"`
+}
+
+type Routes []SearchRoute
+
+func (t Routes) MatchRoute(q *SearchParams) (match bool, isAdditive bool) {
+	for _, route := range t {
+		if route.Match(q) {
+			return true, route.IsAdditive
+		}
+	}
+
+	return false, false
+}
+
+type CommonBackend struct {
+	Routes Routes `json:"routes,omitempty"`
 }
 
 type SearchRoute struct {
-	Type     string            `json:"type,omitempty"`
-	IdPrefix string            `json:"idPrefix,omitempty"`
-	Labels   map[string]string `json:"labels,omitempty"`
+	Type       string            `yaml:"type,omitempty"`
+	IdPrefix   string            `yaml:"idPrefix,omitempty"`
+	Labels     map[string]string `yaml:"labels,omitempty"`
+	IsAdditive bool              `yaml:"additive,omitempty"`
+}
+
+func (t *SearchRoute) Match(q *SearchParams) bool {
+	if t.Type != "" && t.Type != q.Type {
+		return false
+	}
+
+	if t.IdPrefix != "" && !strings.HasPrefix(q.Id, t.IdPrefix) {
+		return false
+	}
+
+	for k, v := range t.Labels {
+		qVal, ok := q.Labels[k]
+		if !ok {
+			return false
+		}
+
+		configuredLabels := strings.Split(v, ",")
+		if !collections.MatchItems(qVal, configuredLabels...) {
+			return false
+		}
+	}
+
+	return true
 }
 
 type KubernetesSearchBackend struct {
+	CommonBackend `json:",inline" yaml:",inline"`
 	// empty kubeconfig indicates to use the current kubeconfig for connection
 	Kubeconfig *kommons.EnvVar `json:"kubeconfig,omitempty"`
 	//namespace to search the kommons.EnvVar in
 	Namespace string `json:"namespace,omitempty"`
 }
 
-type FileSearchBackend struct {
-	Labels map[string]string `yaml:"labels,omitempty"`
-	Paths  []string          `yaml:"path,omitempty"`
+type FileSearchBackendConfig struct {
+	CommonBackend `json:",inline" yaml:",inline"`
+	Labels        map[string]string `yaml:"labels,omitempty"`
+	Paths         []string          `yaml:"path,omitempty"`
+}
+
+// ElasticSearchFields defines the fields to use for the timestamp and message
+// and excluding certain fields from the message
+type ElasticSearchFields struct {
+	Timestamp  string   `yaml:"timestamp,omitempty"`  // Timestamp is the field used to extract the timestamp
+	Message    string   `yaml:"message,omitempty"`    // Message is the field used to extract the message
+	Exclusions []string `yaml:"exclusions,omitempty"` // Exclusions are the fields that'll be extracted from the labels
+}
+
+type ElasticSearchBackendConfig struct {
+	CommonBackend `json:",inline" yaml:",inline"`
+	Address       string              `yaml:"address,omitempty"`
+	Query         string              `yaml:"query,omitempty"`
+	Index         string              `yaml:"index,omitempty"`
+	Namespace     string              `json:"namespace,omitempty"` // Namespace to search the kommons.EnvVar in
+	Fields        ElasticSearchFields `yaml:"fields,omitempty"`
+
+	CloudID  *kommons.EnvVar `yaml:"cloudID,omitempty"`
+	APIKey   *kommons.EnvVar `yaml:"apiKey,omitempty"`
+	Username *kommons.EnvVar `yaml:"username,omitempty"`
+	Password *kommons.EnvVar `yaml:"password,omitempty"`
+}
+
+type OpenSearchBackendConfig struct {
+	CommonBackend `json:",inline" yaml:",inline"`
+	Address       string              `yaml:"address,omitempty"`
+	Query         string              `yaml:"query,omitempty"`
+	Index         string              `yaml:"index,omitempty"`
+	Namespace     string              `yaml:"namespace,omitempty"` // Namespace to search the kommons.EnvVar in
+	Fields        ElasticSearchFields `yaml:"fields,omitempty"`
+
+	Username *kommons.EnvVar `yaml:"username,omitempty"`
+	Password *kommons.EnvVar `yaml:"password,omitempty"`
 }
 
 type SearchParams struct {
@@ -60,7 +142,6 @@ type SearchParams struct {
 	// The identifier of the type of logs to find, e.g. k8s-node-1, k8s-service-1, k8s-pod-1, vm-1, etc.
 	// The ID should include include any cluster/namespace/account information required for routing
 	Id string `json:"id,omitempty"`
-
 	// Limits the number of log messages return per item, e.g. pod
 	LimitPerItem int64 `json:"limitPerItem,omitempty"`
 	// Limits the number of bytes returned per item, e.g. pod
@@ -70,30 +151,63 @@ type SearchParams struct {
 	end   *time.Time `json:"-"`
 }
 
-func (p SearchParams) GetStart() *time.Time {
+// SetDefaults sets the default values for the search params
+// if they are not set
+func (t *SearchParams) SetDefaults() {
+	if t.Start == "" {
+		t.Start = "1h"
+	}
+
+	if t.LimitPerItem == 0 {
+		t.LimitPerItem = 100
+	}
+
+	if t.Limit <= 0 {
+		t.Limit = 50
+	}
+
+	if t.LimitBytesPerItem == 0 {
+		t.LimitBytesPerItem = 100 * 1024
+	}
+}
+
+func (p SearchParams) GetStartISO() string {
+	start := p.GetStart()
+	if start == nil {
+		return ""
+	}
+
+	return start.UTC().Format("2006-01-02T15:04:05.000Z")
+}
+
+func (p *SearchParams) GetStart() *time.Time {
 	if p.start != nil {
 		return p.start
 	}
-	if duration, err := time.ParseDuration(p.Start); err == nil {
-		t := time.Now().Add(-duration)
+
+	if duration, err := durationUtil.ParseDuration(p.Start); err == nil {
+		t := time.Now().Add(-time.Duration(duration))
 		p.start = &t
 	} else if t, err := time.Parse(time.RFC3339, p.Start); err == nil {
 		p.start = &t
 	}
+
 	return p.start
 }
 
-func (p SearchParams) GetEnd() *time.Time {
+func (p *SearchParams) GetEnd() *time.Time {
 	if p.end != nil {
 		return p.end
 	}
-	if duration, err := time.ParseDuration(p.End); err == nil {
-		t := time.Now().Add(-duration)
+
+	if duration, err := durationUtil.ParseDuration(p.End); err == nil {
+		t := time.Now().Add(-time.Duration(duration))
 		p.end = &t
 	} else if t, err := time.Parse(time.RFC3339, p.End); err == nil {
 		p.end = &t
 	}
-	return p.start
+
+	return p.end
 }
 
 func (q SearchParams) String() string {
@@ -134,6 +248,7 @@ type SearchResults struct {
 func (r *SearchResults) Append(other *SearchResults) {
 	r.Results = append(r.Results, other.Results...)
 	r.Total += other.Total
+	r.NextPage = other.NextPage
 }
 
 type Result struct {
@@ -161,6 +276,7 @@ func (r Result) Process() Result {
 
 type SearchAPI interface {
 	Search(q *SearchParams) (r SearchResults, err error)
+	MatchRoute(q *SearchParams) (match bool, isAdditive bool)
 }
 
 type SearchMapper interface {
