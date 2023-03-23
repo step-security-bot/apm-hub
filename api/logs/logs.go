@@ -52,7 +52,7 @@ func (t Routes) MatchRoute(q *SearchParams) (match bool, isAdditive bool) {
 
 // +kubebuilder:object:generate=true
 type CommonBackend struct {
-	Routes Routes `yaml:"labels,omitempty" json:"routes,omitempty"`
+	Routes Routes `yaml:"routes,omitempty" json:"routes,omitempty"`
 
 	// Labels are custom labels specified in the configuration file for a backend
 	// that will be attached to each log line returned by that backend.
