@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/flanksource/apm-hub/api/logs"
+	"github.com/flanksource/commons/collections"
 	"github.com/flanksource/commons/logger"
 )
 
@@ -19,11 +20,7 @@ func (t *FileSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err err
 	var res logs.SearchResults
 
 	for _, b := range t.FilesBackendConfig {
-		if !matchQueryLabels(q.Labels, b.Labels) {
-			continue
-		}
-
-		files := readFilesLines(b.Paths, q.Labels)
+		files := readFilesLines(b.Paths, collections.MergeMap(b.Labels, q.Labels))
 		for _, content := range files {
 			res.Results = append(res.Results, content...)
 		}
@@ -63,7 +60,7 @@ func readFilesLines(paths []string, labelsToAttach map[string]string) logsPerFil
 		}
 
 		// All lines of the same file will share these labels
-		labels := MergeMap(map[string]string{"path": path}, labelsToAttach)
+		labels := collections.MergeMap(map[string]string{"path": path}, labelsToAttach)
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -86,16 +83,6 @@ func matchQueryLabels(want, have map[string]string) bool {
 	}
 
 	return true
-}
-
-// MergeMap will merge map b into a.
-// On key collision, map b takes precedence.
-func MergeMap(a, b map[string]string) map[string]string {
-	for k, v := range b {
-		a[k] = v
-	}
-
-	return a
 }
 
 func unfoldGlobs(paths []string) []string {

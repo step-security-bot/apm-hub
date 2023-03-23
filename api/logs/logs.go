@@ -50,7 +50,11 @@ func (t Routes) MatchRoute(q *SearchParams) (match bool, isAdditive bool) {
 
 // +kubebuilder:object:generate=true
 type CommonBackend struct {
-	Routes Routes `json:"routes,omitempty"`
+	Routes Routes `yaml:"labels,omitempty" json:"routes,omitempty"`
+
+	// Labels are custom labels specified in the configuration file for a backend
+	// that will be attached to each log line returned by that backend.
+	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 }
 
 func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
@@ -116,8 +120,7 @@ type KubernetesSearchBackend struct {
 // +kubebuilder:object:generate=true
 type FileSearchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
-	Labels        map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Paths         []string          `yaml:"path,omitempty" json:"path,omitempty"`
+	Paths         []string `yaml:"path,omitempty" json:"path,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
