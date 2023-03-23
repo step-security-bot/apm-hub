@@ -73,9 +73,7 @@ func AttachSearchAPIToBackend(kommonsClient *kommons.Client, backend *logs.Searc
 		if err != nil {
 			return err
 		}
-		backend.API = &k8s.KubernetesSearch{
-			Client: k8sclient,
-		}
+		backend.API = k8s.NewKubernetesSearchBackend(k8sclient, backend.Kubernetes)
 	}
 
 	if len(backend.Files) > 0 {

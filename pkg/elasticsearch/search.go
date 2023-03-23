@@ -17,7 +17,7 @@ type ElasticSearchBackend struct {
 	fields   logs.ElasticSearchFields
 	template *template.Template
 	index    string
-	routes   logs.Routes
+	config   *logs.ElasticSearchBackendConfig
 }
 
 func NewElasticSearchBackend(client *elasticsearch.Client, config *logs.ElasticSearchBackendConfig) (*ElasticSearchBackend, error) {
@@ -39,12 +39,12 @@ func NewElasticSearchBackend(client *elasticsearch.Client, config *logs.ElasticS
 		index:    config.Index,
 		fields:   config.Fields,
 		template: template,
-		routes:   config.Routes,
+		config:   config,
 	}, nil
 }
 
 func (t *ElasticSearchBackend) MatchRoute(q *logs.SearchParams) (match bool, isAdditive bool) {
-	return t.routes.MatchRoute(q)
+	return t.config.CommonBackend.Routes.MatchRoute(q)
 }
 
 func (t *ElasticSearchBackend) Search(q *logs.SearchParams) (logs.SearchResults, error) {
@@ -72,7 +72,7 @@ func (t *ElasticSearchBackend) Search(q *logs.SearchParams) (logs.SearchResults,
 		return result, fmt.Errorf("error parsing the response body: %w", err)
 	}
 
-	result.Results = r.Hits.GetResultsFromHits(q.Limit, t.fields.Message, t.fields.Timestamp, t.fields.Exclusions...)
+	result.Results = r.Hits.GetResultsFromHits(q.Limit, t.fields.Message, t.fields.Timestamp, t.config.Labels, t.fields.Exclusions...)
 	result.Total = int(r.Hits.Total.Value)
 	result.NextPage = r.Hits.NextPage(int(q.Limit))
 	return result, nil

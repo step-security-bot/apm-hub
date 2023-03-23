@@ -21,19 +21,19 @@ type SearchConfig struct {
 
 // +kubebuilder:object:generate=true
 type SearchBackendConfig struct {
-	ElasticSearch *ElasticSearchBackendConfig `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig    `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackend    `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig   `json:"file,omitempty" yaml:"file,omitempty"`
+	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
+	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type SearchBackend struct {
-	Name          string                      `json:"name"`
-	API           SearchAPI                   `json:"-"`
-	ElasticSearch *ElasticSearchBackendConfig `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig    `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackend    `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig   `json:"file,omitempty" yaml:"file,omitempty"`
+	Name          string                         `json:"name"`
+	API           SearchAPI                      `json:"-"`
+	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
+	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type Routes []SearchRoute
@@ -109,7 +109,7 @@ func (t *SearchRoute) Match(q *SearchParams) bool {
 }
 
 // +kubebuilder:object:generate=true
-type KubernetesSearchBackend struct {
+type KubernetesSearchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
 	// empty kubeconfig indicates to use the current kubeconfig for connection
 	Kubeconfig *kommons.EnvVar `json:"kubeconfig,omitempty"`

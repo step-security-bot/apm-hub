@@ -20,7 +20,7 @@ type Client struct {
 	*kommons.Client
 }
 
-func GetKubeClient(kommonsClient *kommons.Client, kubernetesSeachBackend *logs.KubernetesSearchBackend) (*Client, error) {
+func GetKubeClient(kommonsClient *kommons.Client, kubernetesSeachBackend *logs.KubernetesSearchBackendConfig) (*Client, error) {
 	if kubernetesSeachBackend.Kubeconfig != nil {
 		if kommonsClient != nil {
 			_, value, err := kommonsClient.GetEnvValue(*kubernetesSeachBackend.Kubeconfig, kubernetesSeachBackend.Namespace)
