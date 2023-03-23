@@ -18,7 +18,7 @@ type OpenSearchBackend struct {
 	fields   logs.ElasticSearchFields
 	template *template.Template
 	index    string
-	routes   logs.Routes
+	config   *logs.OpenSearchBackendConfig
 }
 
 func NewOpenSearchBackend(client *opensearch.Client, config *logs.OpenSearchBackendConfig) (*OpenSearchBackend, error) {
@@ -40,12 +40,11 @@ func NewOpenSearchBackend(client *opensearch.Client, config *logs.OpenSearchBack
 		client:   client,
 		index:    config.Index,
 		template: template,
-		routes:   config.Routes,
 	}, nil
 }
 
 func (t *OpenSearchBackend) MatchRoute(q *logs.SearchParams) (match bool, isAdditive bool) {
-	return t.routes.MatchRoute(q)
+	return t.config.CommonBackend.Routes.MatchRoute(q)
 }
 
 func (t *OpenSearchBackend) Search(q *logs.SearchParams) (logs.SearchResults, error) {
@@ -74,7 +73,7 @@ func (t *OpenSearchBackend) Search(q *logs.SearchParams) (logs.SearchResults, er
 		return result, fmt.Errorf("error parsing the response body: %w", err)
 	}
 
-	result.Results = r.Hits.GetResultsFromHits(q.Limit, t.fields.Message, t.fields.Timestamp, t.fields.Exclusions...)
+	result.Results = r.Hits.GetResultsFromHits(q.Limit, t.fields.Message, t.fields.Timestamp, t.config.Labels, t.fields.Exclusions...)
 	result.Total = int(r.Hits.Total.Value)
 	result.NextPage = r.Hits.NextPage(int(q.Limit))
 	return result, nil

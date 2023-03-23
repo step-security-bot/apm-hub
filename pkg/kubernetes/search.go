@@ -5,13 +5,21 @@ import (
 	"strings"
 
 	"github.com/flanksource/apm-hub/api/logs"
+	"github.com/flanksource/commons/collections"
 	"github.com/flanksource/commons/logger"
 	v1 "k8s.io/api/core/v1"
 )
 
+func NewKubernetesSearchBackend(client *Client, config *logs.KubernetesSearchBackendConfig) *KubernetesSearch {
+	return &KubernetesSearch{
+		client: client,
+		config: config,
+	}
+}
+
 type KubernetesSearch struct {
-	Client *Client
-	Routes logs.Routes
+	client *Client
+	config *logs.KubernetesSearchBackendConfig
 }
 
 func podNames(list *v1.PodList) []string {
@@ -23,28 +31,29 @@ func podNames(list *v1.PodList) []string {
 }
 
 func (t *KubernetesSearch) MatchRoute(q *logs.SearchParams) (match bool, isAdditive bool) {
-	return t.Routes.MatchRoute(q)
+	return t.config.CommonBackend.Routes.MatchRoute(q)
 }
 
 func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err error) {
-	var pods *v1.PodList
-	var resultLabels map[string]string
+	resultLabels := collections.MergeMap(s.config.CommonBackend.Labels, map[string]string{})
 	namespace, name := s.GetNameNamespace(q)
+
 	logger.Debugf("searching %s namespace=%s name=%s", q, namespace, name)
+	var pods *v1.PodList
 	switch {
 	case strings.Contains(strings.ToLower(q.Type), "kubernetespod"):
-		pods, err = s.Client.GetPodsWithNameAndLabels(name, namespace, q.Labels)
+		pods, err = s.client.GetPodsWithNameAndLabels(name, namespace, q.Labels)
 
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesnode"):
-		pods, err = s.Client.GetAllPodsForNode(q.Id, q.Labels)
+		pods, err = s.client.GetAllPodsForNode(q.Id, q.Labels)
 
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesdeployment"):
-		pods, err = s.Client.GetPodsForDeployment(name, namespace, q.Labels)
+		pods, err = s.client.GetPodsForDeployment(name, namespace, q.Labels)
 		resultLabels = map[string]string{
 			"deployment": q.Id,
 		}
 	case strings.Contains(strings.ToLower(q.Type), "kubernetesservice"):
-		pods, err = s.Client.GetPodsForService(name, namespace, q.Labels)
+		pods, err = s.client.GetPodsForService(name, namespace, q.Labels)
 		resultLabels = map[string]string{
 			"service": q.Id,
 		}
@@ -66,7 +75,7 @@ func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, e
 func (s *KubernetesSearch) getLogResultsForPods(q *logs.SearchParams, pods *v1.PodList, resultLabels map[string]string) []logs.Result {
 	var results []logs.Result
 	for _, pod := range pods.Items {
-		podLogs, err := s.Client.GetLogsForPod(q, pod)
+		podLogs, err := s.client.GetLogsForPod(q, pod)
 		if err != nil {
 			logger.Errorf("error fetching logs for pod: %v in namespace: %v, err: ", pod.Name, pod.Namespace, err)
 			continue

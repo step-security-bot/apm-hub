@@ -60,7 +60,7 @@ func (t *HitsInfo) NextPage(requestedRowsCount int) string {
 }
 
 // GetResultsFromHits returns the results from the hits.
-func (t *HitsInfo) GetResultsFromHits(requestedRowsCount int64, msgField, timestampField string, excludeFields ...string) []logs.Result {
+func (t *HitsInfo) GetResultsFromHits(requestedRowsCount int64, msgField, timestampField string, labelsToAttach map[string]string, excludeFields ...string) []logs.Result {
 	// Don't user more than the requested rows count.
 	rows := t.Hits
 	if len(t.Hits) > int(requestedRowsCount) {
@@ -91,7 +91,7 @@ func (t *HitsInfo) GetResultsFromHits(requestedRowsCount int64, msgField, timest
 			Id:      row.ID,
 			Message: msg,
 			Time:    timestamp,
-			Labels:  labels,
+			Labels:  collections.MergeMap(labelsToAttach, labels),
 		})
 	}
 

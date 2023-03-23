@@ -8,3 +8,5 @@
 
 # Hidden configs
 samples/.*yaml
+
+cover.out

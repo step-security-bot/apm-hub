@@ -13,6 +13,8 @@ import (
 
 var GlobalBackends []SearchBackend
 
+// SearchConfig refers to the main configuration
+// that consists of configuration for a list of backends.
 type SearchConfig struct {
 	// Path is the path of this config file
 	Path     string               `yaml:"-"`
@@ -21,19 +23,19 @@ type SearchConfig struct {
 
 // +kubebuilder:object:generate=true
 type SearchBackendConfig struct {
-	ElasticSearch *ElasticSearchBackendConfig `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig    `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackend    `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig   `json:"file,omitempty" yaml:"file,omitempty"`
+	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
+	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type SearchBackend struct {
-	Name          string                      `json:"name"`
-	API           SearchAPI                   `json:"-"`
-	ElasticSearch *ElasticSearchBackendConfig `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig    `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackend    `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig   `json:"file,omitempty" yaml:"file,omitempty"`
+	Name          string                         `json:"name"`
+	API           SearchAPI                      `json:"-"`
+	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
+	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type Routes []SearchRoute
@@ -50,7 +52,11 @@ func (t Routes) MatchRoute(q *SearchParams) (match bool, isAdditive bool) {
 
 // +kubebuilder:object:generate=true
 type CommonBackend struct {
-	Routes Routes `json:"routes,omitempty"`
+	Routes Routes `yaml:"routes,omitempty" json:"routes,omitempty"`
+
+	// Labels are custom labels specified in the configuration file for a backend
+	// that will be attached to each log line returned by that backend.
+	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 }
 
 func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
@@ -105,7 +111,7 @@ func (t *SearchRoute) Match(q *SearchParams) bool {
 }
 
 // +kubebuilder:object:generate=true
-type KubernetesSearchBackend struct {
+type KubernetesSearchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
 	// empty kubeconfig indicates to use the current kubeconfig for connection
 	Kubeconfig *kommons.EnvVar `json:"kubeconfig,omitempty"`
@@ -116,8 +122,7 @@ type KubernetesSearchBackend struct {
 // +kubebuilder:object:generate=true
 type FileSearchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
-	Labels        map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Paths         []string          `yaml:"path,omitempty" json:"path,omitempty"`
+	Paths         []string `yaml:"path,omitempty" json:"path,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -155,12 +160,6 @@ type OpenSearchBackendConfig struct {
 
 	Username *kommons.EnvVar `yaml:"username,omitempty" json:"username,omitempty"`
 	Password *kommons.EnvVar `yaml:"password,omitempty" json:"password,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type FileSearchBackend struct {
-	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
-	Paths  []string          `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 type SearchParams struct {
