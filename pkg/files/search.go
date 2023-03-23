@@ -75,16 +75,6 @@ func readFilesLines(paths []string, labelsToAttach map[string]string) logsPerFil
 	return fileContents
 }
 
-func matchQueryLabels(want, have map[string]string) bool {
-	for label, val := range want {
-		if val != have[label] {
-			return false
-		}
-	}
-
-	return true
-}
-
 func unfoldGlobs(paths []string) []string {
 	unfoldedPaths := make([]string, 0, len(paths))
 	for _, path := range paths {
