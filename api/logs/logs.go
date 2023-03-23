@@ -13,6 +13,8 @@ import (
 
 var GlobalBackends []SearchBackend
 
+// SearchConfig refers to the main configuration
+// that consists of configuration for a list of backends.
 type SearchConfig struct {
 	// Path is the path of this config file
 	Path     string               `yaml:"-"`
@@ -158,12 +160,6 @@ type OpenSearchBackendConfig struct {
 
 	Username *kommons.EnvVar `yaml:"username,omitempty" json:"username,omitempty"`
 	Password *kommons.EnvVar `yaml:"password,omitempty" json:"password,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type FileSearchBackend struct {
-	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
-	Paths  []string          `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 type SearchParams struct {
