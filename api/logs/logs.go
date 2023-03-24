@@ -17,25 +17,25 @@ var GlobalBackends []SearchBackend
 // that consists of configuration for a list of backends.
 type SearchConfig struct {
 	// Path is the path of this config file
-	Path     string               `yaml:"-"`
-	Backends SearchBackendConfigs `yaml:"backends,omitempty"`
+	Path     string               `yaml:"-" json:"-"`
+	Backends SearchBackendConfigs `yaml:"backends,omitempty" json:"backends,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
 type SearchBackendConfig struct {
-	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
-	Files         *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
+	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty" yaml:"elasticsearch,omitempty"`
+	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty" yaml:"opensearch,omitempty"`
+	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty" yaml:"kubernetes,omitempty"`
+	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type SearchBackend struct {
-	Name          string                         `json:"name"`
-	API           SearchAPI                      `json:"-"`
-	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
-	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
-	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
-	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
+	Name          string
+	API           SearchAPI
+	ElasticSearch *ElasticSearchBackendConfig
+	OpenSearch    *OpenSearchBackendConfig
+	Kubernetes    *KubernetesSearchBackendConfig
+	File          *FileSearchBackendConfig
 }
 
 type Routes []SearchRoute
@@ -62,7 +62,7 @@ type CommonBackend struct {
 func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
 	return SearchBackend{
 		Kubernetes:    b.Kubernetes,
-		File:          b.Files,
+		File:          b.File,
 		ElasticSearch: b.ElasticSearch,
 		OpenSearch:    b.OpenSearch,
 	}
