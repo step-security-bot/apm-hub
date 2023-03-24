@@ -27,7 +27,9 @@ func runServe(cmd *cobra.Command, configFiles []string) {
 		logger.Warnf("error getting the client from default k8s cluster: %v", err)
 	}
 
-	db.DeleteOldConfigFileBackends()
+	if err := db.DeleteOldConfigFileBackends(); err != nil {
+		logger.Fatalf("error deleting old config file backends: %v", err)
+	}
 	if len(configFiles) != 0 {
 		for _, configFile := range configFiles {
 			logger.Debugf("parsing config file: %s", configFile)
