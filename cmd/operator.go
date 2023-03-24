@@ -58,7 +58,6 @@ func run(cmd *cobra.Command, args []string) {
 	utilruntime.Must(configsv1.AddToScheme(scheme))
 
 	// Start the server
-	// TODO: Change function and handle operator backends
 	go runServe(nil, args)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{

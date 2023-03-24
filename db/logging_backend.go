@@ -34,10 +34,9 @@ func PersistLoggingBackendConfigFile(config logs.SearchConfig) error {
 		return fmt.Errorf("error generating uuid: %v", err)
 	}
 	b := models.LoggingBackend{
-		ID:     id,
-		Name:   fmt.Sprintf("Config:%s", config.Path),
-		Source: "ConfigFile",
-		// TODO: Ensure this happens
+		ID:        id,
+		Name:      fmt.Sprintf("Config:%s", config.Path),
+		Source:    "ConfigFile",
 		DeletedAt: nil,
 	}
 	b.Spec, _ = utils.StructToJSON(apiv1.LoggingBackendSpec{Backends: config.Backends})

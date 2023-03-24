@@ -21,20 +21,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - name: config
-            mountPath: /app/config.yaml
-            subPath: config.yaml
           command:
             - /app/apm-hub
           args:
-            - serve
+            - operator
             - -vvv
-            - /app/config.yaml
       {{- with .Values.extra }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-      volumes:
-        - name: config
-          configMap:
-            name: {{ .Chart.Name }}-config
