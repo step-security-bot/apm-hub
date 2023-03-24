@@ -200,10 +200,8 @@ func (in *SearchBackendConfig) DeepCopyInto(out *SearchBackendConfig) {
 	}
 	if in.Files != nil {
 		in, out := &in.Files, &out.Files
-		*out = make([]FileSearchBackendConfig, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
+		*out = new(FileSearchBackendConfig)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

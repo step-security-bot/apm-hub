@@ -26,7 +26,7 @@ type SearchBackendConfig struct {
 	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
 	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
 	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
+	Files         *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type SearchBackend struct {
@@ -35,7 +35,7 @@ type SearchBackend struct {
 	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty"`
 	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty"`
 	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty"`
-	Files         []FileSearchBackendConfig      `json:"file,omitempty" yaml:"file,omitempty"`
+	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
 type Routes []SearchRoute
@@ -62,7 +62,7 @@ type CommonBackend struct {
 func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
 	return SearchBackend{
 		Kubernetes:    b.Kubernetes,
-		Files:         b.Files,
+		File:          b.Files,
 		ElasticSearch: b.ElasticSearch,
 		OpenSearch:    b.OpenSearch,
 	}

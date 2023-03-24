@@ -1,12 +1,21 @@
 backends:
   - file:
-      - labels:
-          name: acmehost
-          type: Nginx
-        path:
-          - nginx-access.log
-      - labels:
-          name: all
-          type: Nginx
-        path:
-          - "*.log"
+      routes:
+        - idPrefix: "nginx-"
+          labels:
+            type: "access"
+      labels:
+        name: acmehost
+        type: Nginx
+      path:
+        - samples/data/nginx-access.log
+  - file:
+      routes:
+        - idPrefix: "nginx-"
+          labels:
+            type: "error"
+      labels:
+        name: acmehost
+        type: Nginx
+      path:
+        - samples/data/nginx-error.log

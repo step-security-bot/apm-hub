@@ -214,36 +214,34 @@ spec:
                           type: object
                       type: object
                     file:
-                      items:
-                        properties:
-                          labels:
-                            additionalProperties:
-                              type: string
-                            description: Labels are custom labels specified in the
-                              configuration file for a backend that will be attached
-                              to each log line returned by that backend.
+                      properties:
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels are custom labels specified in the configuration
+                            file for a backend that will be attached to each log line
+                            returned by that backend.
+                          type: object
+                        path:
+                          items:
+                            type: string
+                          type: array
+                        routes:
+                          items:
+                            properties:
+                              id_prefix:
+                                type: string
+                              is_additive:
+                                type: boolean
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                type: object
+                              type:
+                                type: string
                             type: object
-                          path:
-                            items:
-                              type: string
-                            type: array
-                          routes:
-                            items:
-                              properties:
-                                id_prefix:
-                                  type: string
-                                is_additive:
-                                  type: boolean
-                                labels:
-                                  additionalProperties:
-                                    type: string
-                                  type: object
-                                type:
-                                  type: string
-                              type: object
-                            type: array
-                        type: object
-                      type: array
+                          type: array
+                      type: object
                     kubernetes:
                       properties:
                         kubeconfig:
