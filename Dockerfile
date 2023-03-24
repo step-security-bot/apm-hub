@@ -20,5 +20,5 @@ RUN apt-get update && \
   apt-get clean
 
 COPY --from=builder /app/.bin/apm-hub /app
-
+ENV ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH=go1.20
 ENTRYPOINT ["/app/apm-hub"]
