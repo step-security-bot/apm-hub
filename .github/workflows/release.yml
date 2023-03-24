@@ -9,7 +9,6 @@ on:
 jobs:
   semantic-release:
     runs-on: ubuntu-latest
-    if: failure()
     outputs:
       release-version: ${{ steps.semantic.outputs.release-version }}
       new-release-published: ${{ steps.semantic.outputs.new-release-published }}
