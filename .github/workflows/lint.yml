@@ -14,3 +14,6 @@ jobs:
           go-version: 1.20.x
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
+        with:
+          args: --timeout 61m0s --verbose
+
