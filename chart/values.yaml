@@ -16,11 +16,6 @@ serviceAccount:
   # Annotations to add to the service account
   annotations: {}
 
-configYaml: |
-  backends:
-    - kubernetes:
-        kubeconfig:
-
 ingress:
   enabled: false
   annotations: 
