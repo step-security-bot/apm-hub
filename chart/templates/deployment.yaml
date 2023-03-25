@@ -26,6 +26,12 @@ spec:
           args:
             - operator
             - -vvv
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.secretKeyRef.name }}
+                  key: {{ .Values.db.secretKeyRef.key }}
       {{- with .Values.extra }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
