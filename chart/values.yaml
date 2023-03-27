@@ -17,7 +17,7 @@ serviceAccount:
   annotations: {}
 
 db:
-  # Setting this to true will create a postgres stateful set for config-db to connect to.
+  # Setting this to true will create a postgres stateful set for apm-hub to connect to.
   enabled: true
   secretKeyRef:
     # Setting the name of the secret will disable secret creation in this chart and look for an existing secret (whose name is specified in this field) to mount.
