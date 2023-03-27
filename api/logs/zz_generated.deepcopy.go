@@ -198,12 +198,10 @@ func (in *SearchBackendConfig) DeepCopyInto(out *SearchBackendConfig) {
 		*out = new(KubernetesSearchBackendConfig)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Files != nil {
-		in, out := &in.Files, &out.Files
-		*out = make([]FileSearchBackendConfig, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
+	if in.File != nil {
+		in, out := &in.File, &out.File
+		*out = new(FileSearchBackendConfig)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

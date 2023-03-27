@@ -1,0 +1,5 @@
+backends:
+  - kubernetes:
+      routes:
+        - idPrefix: "cluster-main"
+      kubeconfig:

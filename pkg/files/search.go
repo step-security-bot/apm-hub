@@ -12,32 +12,28 @@ import (
 	"github.com/flanksource/commons/logger"
 )
 
+func NewFileSearchBackend(config *logs.FileSearchBackendConfig) *FileSearch {
+	return &FileSearch{
+		config: config,
+	}
+}
+
 type FileSearch struct {
-	FilesBackendConfig []logs.FileSearchBackendConfig
+	config *logs.FileSearchBackendConfig
 }
 
 func (t *FileSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err error) {
 	var res logs.SearchResults
-
-	for _, b := range t.FilesBackendConfig {
-		files := readFilesLines(b.Paths, collections.MergeMap(b.Labels, q.Labels))
-		for _, content := range files {
-			res.Results = append(res.Results, content...)
-		}
+	lines := readFilesLines(t.config.Paths, collections.MergeMap(t.config.Labels, q.Labels))
+	for _, content := range lines {
+		res.Results = append(res.Results, content...)
 	}
 
 	return res, nil
 }
 
 func (t *FileSearch) MatchRoute(q *logs.SearchParams) (match bool, isAdditive bool) {
-	for _, k := range t.FilesBackendConfig {
-		match, isAdditive := k.Routes.MatchRoute(q)
-		if match {
-			return match, isAdditive
-		}
-	}
-
-	return false, false
+	return t.config.CommonBackend.Routes.MatchRoute(q)
 }
 
 type logsPerFile map[string][]logs.Result

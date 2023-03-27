@@ -76,21 +76,17 @@ func AttachSearchAPIToBackend(kommonsClient *kommons.Client, backend *logs.Searc
 		backend.API = k8s.NewKubernetesSearchBackend(k8sclient, backend.Kubernetes)
 	}
 
-	if len(backend.Files) > 0 {
+	if backend.File != nil {
 		// If the paths are not absolute,
 		// They should be parsed with respect to the current path
-		for i, f := range backend.Files {
-			for j, p := range f.Paths {
-				if !filepath.IsAbs(p) {
-					currentPath, _ := os.Getwd()
-					backend.Files[i].Paths[j] = filepath.Join(currentPath, p)
-				}
+		for j, p := range backend.File.Paths {
+			if !filepath.IsAbs(p) {
+				currentPath, _ := os.Getwd()
+				backend.File.Paths[j] = filepath.Join(currentPath, p)
 			}
 		}
 
-		backend.API = &files.FileSearch{
-			FilesBackendConfig: backend.Files,
-		}
+		backend.API = files.NewFileSearchBackend(backend.File)
 	}
 
 	if backend.ElasticSearch != nil {
