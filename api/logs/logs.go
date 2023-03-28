@@ -29,13 +29,17 @@ type SearchBackendConfig struct {
 	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
+func NewSearchBackend(config SearchBackendConfig, api SearchAPI) SearchBackend {
+	return SearchBackend{
+		API:    api,
+		Config: config,
+	}
+}
+
 type SearchBackend struct {
-	Name          string
-	API           SearchAPI
-	ElasticSearch *ElasticSearchBackendConfig
-	OpenSearch    *OpenSearchBackendConfig
-	Kubernetes    *KubernetesSearchBackendConfig
-	File          *FileSearchBackendConfig
+	Name   string
+	API    SearchAPI
+	Config SearchBackendConfig
 }
 
 type Routes []SearchRoute
@@ -61,10 +65,7 @@ type CommonBackend struct {
 
 func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
 	return SearchBackend{
-		Kubernetes:    b.Kubernetes,
-		File:          b.File,
-		ElasticSearch: b.ElasticSearch,
-		OpenSearch:    b.OpenSearch,
+		Config: b,
 	}
 }
 

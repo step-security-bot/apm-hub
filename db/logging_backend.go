@@ -51,14 +51,14 @@ func DeleteLoggingBackend(id string) error {
 		Error
 }
 
-func GetLoggingBackends() ([]logs.SearchBackend, error) {
+func GetLoggingBackendsSpecs() ([]logs.SearchBackendConfig, error) {
 	var dbBackends []models.LoggingBackend
 	err := gormDB.Table("logging_backends").Where("deleted_at IS NULL").Find(&dbBackends).Error
 	if err != nil {
 		return nil, err
 	}
 
-	var backends []logs.SearchBackend
+	var backends []logs.SearchBackendConfig
 	for _, dbBackend := range dbBackends {
 		var spec apiv1.LoggingBackendSpec
 		err := json.Unmarshal([]byte(dbBackend.Spec), &spec)
@@ -66,8 +66,10 @@ func GetLoggingBackends() ([]logs.SearchBackend, error) {
 			logger.Errorf("")
 			continue
 		}
-		backends = append(backends, spec.Backends.ToSearchBackends()...)
+
+		backends = append(backends, spec.Backends...)
 	}
+
 	return backends, nil
 }
 
