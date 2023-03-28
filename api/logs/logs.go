@@ -29,17 +29,14 @@ type SearchBackendConfig struct {
 	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
 
-func NewSearchBackend(config SearchBackendConfig, api SearchAPI) SearchBackend {
+func NewSearchBackend(api SearchAPI) SearchBackend {
 	return SearchBackend{
-		API:    api,
-		Config: config,
+		API: api,
 	}
 }
 
 type SearchBackend struct {
-	Name   string
-	API    SearchAPI
-	Config SearchBackendConfig
+	API SearchAPI
 }
 
 type Routes []SearchRoute
@@ -63,21 +60,7 @@ type CommonBackend struct {
 	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 }
 
-func (b SearchBackendConfig) ToSearchBackend() SearchBackend {
-	return SearchBackend{
-		Config: b,
-	}
-}
-
 type SearchBackendConfigs []SearchBackendConfig
-
-func (bs SearchBackendConfigs) ToSearchBackends() []SearchBackend {
-	var backends []SearchBackend
-	for _, b := range bs {
-		backends = append(backends, b.ToSearchBackend())
-	}
-	return backends
-}
 
 // +kubebuilder:object:generate=true
 type SearchRoute struct {

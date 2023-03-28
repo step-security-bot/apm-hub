@@ -84,7 +84,7 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 			return nil, err
 		}
 
-		backend := logs.NewSearchBackend(backendConfig, k8s.NewKubernetesSearchBackend(k8sclient, backendConfig.Kubernetes))
+		backend := logs.NewSearchBackend(k8s.NewKubernetesSearchBackend(k8sclient, backendConfig.Kubernetes))
 		backends = append(backends, backend)
 	}
 
@@ -98,7 +98,7 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 			}
 		}
 
-		backend := logs.NewSearchBackend(backendConfig, files.NewFileSearchBackend(backendConfig.File))
+		backend := logs.NewSearchBackend(files.NewFileSearchBackend(backendConfig.File))
 		backends = append(backends, backend)
 	}
 
@@ -127,7 +127,7 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 			return nil, fmt.Errorf("error creating the elastic search backend: %w", err)
 		}
 
-		backend := logs.NewSearchBackend(backendConfig, es)
+		backend := logs.NewSearchBackend(es)
 		backends = append(backends, backend)
 	}
 
@@ -156,7 +156,7 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 			return nil, fmt.Errorf("error creating the openSearch backend: %w", err)
 		}
 
-		backend := logs.NewSearchBackend(backendConfig, osBackend)
+		backend := logs.NewSearchBackend(osBackend)
 		backends = append(backends, backend)
 	}
 
