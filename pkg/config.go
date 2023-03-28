@@ -36,114 +36,131 @@ func ParseConfig(configFile string) (*logs.SearchConfig, error) {
 	return searchConfig, nil
 }
 
-// SetupBackends loads the backends from the config file
-func SetupBackends(kommonsClient *kommons.Client, configBackends []logs.SearchBackend) ([]logs.SearchBackend, error) {
-	var backends []logs.SearchBackend
-	for _, backend := range configBackends {
-		if err := AttachSearchAPIToBackend(kommonsClient, &backend); err != nil {
-			logger.Errorf("Error attaching search api backend: %v", err)
+// SetupBackends instantiates backends from the given configurations.
+func SetupBackends(kommonsClient *kommons.Client, backendConfigs []logs.SearchBackendConfig) ([]logs.SearchBackend, error) {
+	var allBackends []logs.SearchBackend
+	for _, config := range backendConfigs {
+		backends, err := getBackendsFromConfigs(kommonsClient, config)
+		if err != nil {
+			logger.Errorf("error instantiating backends from the config: %v", err)
+			continue
 		}
-		backends = append(backends, backend)
+
+		allBackends = append(allBackends, backends...)
 	}
-	return backends, nil
+
+	return allBackends, nil
 }
 
 func LoadGlobalBackends() error {
 	kommonsClient, err := kommons.NewClientFromDefaults(logger.GetZapLogger())
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting the kommons client: %w", err)
 	}
 
-	dbBackends, err := db.GetLoggingBackends()
+	dbBackendConfigs, err := db.GetLoggingBackendsSpecs()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting the logging backend configs from the db: %w", err)
 	}
-	backends, err := SetupBackends(kommonsClient, dbBackends)
+
+	backends, err := SetupBackends(kommonsClient, dbBackendConfigs)
 	if err != nil {
-		return err
+		return fmt.Errorf("error setting up the backends: %w", err)
 	}
 
 	logs.GlobalBackends = backends
 	return nil
 }
 
-func AttachSearchAPIToBackend(kommonsClient *kommons.Client, backend *logs.SearchBackend) error {
-	if backend.Kubernetes != nil {
-		k8sclient, err := k8s.GetKubeClient(kommonsClient, backend.Kubernetes)
+// getBackendsFromConfigs instantiates backends from the given configuration.
+//
+// A single configuration can have multiple backends.
+func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.SearchBackendConfig) ([]logs.SearchBackend, error) {
+	var backends []logs.SearchBackend
+
+	if backendConfig.Kubernetes != nil {
+		k8sclient, err := k8s.GetKubeClient(kommonsClient, backendConfig.Kubernetes)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		backend.API = k8s.NewKubernetesSearchBackend(k8sclient, backend.Kubernetes)
+
+		backend := logs.NewSearchBackend(k8s.NewKubernetesSearchBackend(k8sclient, backendConfig.Kubernetes))
+		backends = append(backends, backend)
 	}
 
-	if backend.File != nil {
+	if backendConfig.File != nil {
 		// If the paths are not absolute,
 		// They should be parsed with respect to the current path
-		for j, p := range backend.File.Paths {
+		for j, p := range backendConfig.File.Paths {
 			if !filepath.IsAbs(p) {
 				currentPath, _ := os.Getwd()
-				backend.File.Paths[j] = filepath.Join(currentPath, p)
+				backendConfig.File.Paths[j] = filepath.Join(currentPath, p)
 			}
 		}
 
-		backend.API = files.NewFileSearchBackend(backend.File)
+		backend := logs.NewSearchBackend(files.NewFileSearchBackend(backendConfig.File))
+		backends = append(backends, backend)
 	}
 
-	if backend.ElasticSearch != nil {
-		cfg, err := getElasticConfig(kommonsClient, backend.ElasticSearch)
+	if backendConfig.ElasticSearch != nil {
+		cfg, err := getElasticConfig(kommonsClient, backendConfig.ElasticSearch)
 		if err != nil {
-			return fmt.Errorf("error getting the elastic search config: %w", err)
+			return nil, fmt.Errorf("error getting the elastic search config: %w", err)
 		}
 
 		esClient, err := v8.NewClient(*cfg)
 		if err != nil {
-			return fmt.Errorf("error creating the elastic search client: %w", err)
+			return nil, fmt.Errorf("error creating the elastic search client: %w", err)
 		}
 
 		pingResp, err := esClient.Ping()
 		if err != nil {
-			return fmt.Errorf("error pinging the elastic search client: %w", err)
+			return nil, fmt.Errorf("error pinging the elastic search client: %w", err)
 		}
 
 		if pingResp.StatusCode != 200 {
-			return fmt.Errorf("[elasticsearch] got ping response: %d", pingResp.StatusCode)
+			return nil, fmt.Errorf("[elasticsearch] got ping response: %d", pingResp.StatusCode)
 		}
 
-		es, err := elasticsearch.NewElasticSearchBackend(esClient, backend.ElasticSearch)
+		es, err := elasticsearch.NewElasticSearchBackend(esClient, backendConfig.ElasticSearch)
 		if err != nil {
-			return fmt.Errorf("error creating the elastic search backend: %w", err)
+			return nil, fmt.Errorf("error creating the elastic search backend: %w", err)
 		}
-		backend.API = es
+
+		backend := logs.NewSearchBackend(es)
+		backends = append(backends, backend)
 	}
 
-	if backend.OpenSearch != nil {
-		cfg, err := getOpenSearchConfig(kommonsClient, backend.OpenSearch)
+	if backendConfig.OpenSearch != nil {
+		cfg, err := getOpenSearchConfig(kommonsClient, backendConfig.OpenSearch)
 		if err != nil {
-			return fmt.Errorf("error getting the openSearch config: %w", err)
+			return nil, fmt.Errorf("error getting the openSearch config: %w", err)
 		}
 
 		osClient, err := opensearch.NewClient(*cfg)
 		if err != nil {
-			return fmt.Errorf("error creating the openSearch client: %w", err)
+			return nil, fmt.Errorf("error creating the openSearch client: %w", err)
 		}
 
 		pingResp, err := osClient.Ping()
 		if err != nil {
-			return fmt.Errorf("error pinging the openSearch client: %w", err)
+			return nil, fmt.Errorf("error pinging the openSearch client: %w", err)
 		}
 
 		if pingResp.StatusCode != 200 {
-			return fmt.Errorf("[opensearch] got ping response: %d", pingResp.StatusCode)
+			return nil, fmt.Errorf("[opensearch] got ping response: %d", pingResp.StatusCode)
 		}
 
-		osBackend, err := pkgOpensearch.NewOpenSearchBackend(osClient, backend.OpenSearch)
+		osBackend, err := pkgOpensearch.NewOpenSearchBackend(osClient, backendConfig.OpenSearch)
 		if err != nil {
-			return fmt.Errorf("error creating the openSearch backend: %w", err)
+			return nil, fmt.Errorf("error creating the openSearch backend: %w", err)
 		}
-		backend.API = osBackend
+
+		backend := logs.NewSearchBackend(osBackend)
+		backends = append(backends, backend)
 	}
 
-	return nil
+	return backends, nil
 }
 
 func getOpenSearchEnvVars(client *kommons.Client, conf *logs.OpenSearchBackendConfig) (username, password string, err error) {
