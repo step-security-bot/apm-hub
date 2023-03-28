@@ -38,7 +38,7 @@ rules:
       - watch
   # For operator
   - apiGroups:
-    - apmhub.flanksource.com
+    - apm-hub.flanksource.com
     resources:
     - loggingbackends
     verbs:
@@ -50,7 +50,7 @@ rules:
     - update
     - watch
   - apiGroups:
-    - apmhub.flanksource.com
+    - apm-hub.flanksource.com
     resources:
     - loggingbackends/status
     verbs:
