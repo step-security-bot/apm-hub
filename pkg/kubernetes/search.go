@@ -35,7 +35,7 @@ func (t *KubernetesSearch) MatchRoute(q *logs.SearchParams) (match bool, isAddit
 }
 
 func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, err error) {
-	resultLabels := collections.MergeMap(s.config.CommonBackend.Labels, map[string]string{})
+	var resultLabels = make(map[string]string)
 	namespace, name := s.GetNameNamespace(q)
 
 	logger.Debugf("searching %s namespace=%s name=%s", q, namespace, name)
@@ -67,7 +67,7 @@ func (s *KubernetesSearch) Search(q *logs.SearchParams) (r logs.SearchResults, e
 		return r, nil
 	}
 	logger.Tracef("[%s] searching in pods %s ", q, podNames(pods))
-	r.Results = s.getLogResultsForPods(q, pods, resultLabels)
+	r.Results = s.getLogResultsForPods(q, pods, collections.MergeMap(s.config.CommonBackend.Labels, resultLabels))
 	r.Total = len(r.Results)
 	return r, nil
 }
