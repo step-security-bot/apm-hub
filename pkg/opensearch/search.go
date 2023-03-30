@@ -38,6 +38,7 @@ func NewOpenSearchBackend(client *opensearch.Client, config *logs.OpenSearchBack
 	return &OpenSearchBackend{
 		fields:   config.Fields,
 		client:   client,
+		config:   config,
 		index:    config.Index,
 		template: template,
 	}, nil
