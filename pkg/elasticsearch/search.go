@@ -51,7 +51,7 @@ func (t *ElasticSearchBackend) Search(q *logs.SearchParams) (logs.SearchResults,
 	var result logs.SearchResults
 	var buf bytes.Buffer
 
-	if err := t.template.Execute(&buf, q.Labels); err != nil {
+	if err := t.template.Execute(&buf, q); err != nil {
 		return result, fmt.Errorf("error executing template: %w", err)
 	}
 
