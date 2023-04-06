@@ -42,6 +42,10 @@ type SearchBackend struct {
 type Routes []SearchRoute
 
 func (t Routes) MatchRoute(q *SearchParams) (match bool, isAdditive bool) {
+	// If routes are empty, always return true
+	if len(t) == 0 {
+		return true, false
+	}
 	for _, route := range t {
 		if route.Match(q) {
 			return true, route.IsAdditive
