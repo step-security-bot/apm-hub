@@ -37,19 +37,18 @@ func ParseConfig(configFile string) (*logs.SearchConfig, error) {
 }
 
 // SetupBackends instantiates backends from the given configurations.
-func SetupBackends(kommonsClient *kommons.Client, backendConfigs []logs.SearchBackendConfig) ([]logs.SearchBackend, error) {
+func SetupBackends(kommonsClient *kommons.Client, backendConfigs []logs.SearchBackendConfig) []logs.SearchBackend {
 	var allBackends []logs.SearchBackend
 	for _, config := range backendConfigs {
 		backends, err := getBackendsFromConfigs(kommonsClient, config)
 		if err != nil {
-			logger.Errorf("error instantiating backends from the config: %v", err)
+			logger.Errorf("error instantiating backend from the config: %v", err)
 			continue
 		}
 
 		allBackends = append(allBackends, backends...)
 	}
-
-	return allBackends, nil
+	return allBackends
 }
 
 func LoadGlobalBackends() error {
@@ -63,12 +62,7 @@ func LoadGlobalBackends() error {
 		return fmt.Errorf("error getting the logging backend configs from the db: %w", err)
 	}
 
-	backends, err := SetupBackends(kommonsClient, dbBackendConfigs)
-	if err != nil {
-		return fmt.Errorf("error setting up the backends: %w", err)
-	}
-
-	logs.GlobalBackends = backends
+	logs.GlobalBackends = SetupBackends(kommonsClient, dbBackendConfigs)
 	return nil
 }
 
