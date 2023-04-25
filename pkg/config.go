@@ -37,19 +37,18 @@ func ParseConfig(configFile string) (*logs.SearchConfig, error) {
 }
 
 // SetupBackends instantiates backends from the given configurations.
-func SetupBackends(kommonsClient *kommons.Client, backendConfigs []logs.SearchBackendConfig) ([]logs.SearchBackend, error) {
+func SetupBackends(kommonsClient *kommons.Client, backendConfigs []logs.SearchBackendConfig) []logs.SearchBackend {
 	var allBackends []logs.SearchBackend
 	for _, config := range backendConfigs {
 		backends, err := getBackendsFromConfigs(kommonsClient, config)
 		if err != nil {
-			logger.Errorf("error instantiating backends from the config: %v", err)
+			logger.Errorf("error instantiating backend from the config: %v", err)
 			continue
 		}
 
 		allBackends = append(allBackends, backends...)
 	}
-
-	return allBackends, nil
+	return allBackends
 }
 
 func LoadGlobalBackends() error {
@@ -63,14 +62,11 @@ func LoadGlobalBackends() error {
 		return fmt.Errorf("error getting the logging backend configs from the db: %w", err)
 	}
 
-	backends, err := SetupBackends(kommonsClient, dbBackendConfigs)
-	if err != nil {
-		return fmt.Errorf("error setting up the backends: %w", err)
-	}
-
-	logs.GlobalBackends = backends
+	logs.GlobalBackends = SetupBackends(kommonsClient, dbBackendConfigs)
 	return nil
 }
+
+var errRoutesNotProvided = fmt.Errorf("no routes provided")
 
 // getBackendsFromConfigs instantiates backends from the given configuration.
 //
@@ -79,6 +75,10 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 	var backends []logs.SearchBackend
 
 	if backendConfig.Kubernetes != nil {
+		if len(backendConfig.Kubernetes.Routes) == 0 {
+			return nil, errRoutesNotProvided
+		}
+
 		k8sclient, err := k8s.GetKubeClient(kommonsClient, backendConfig.Kubernetes)
 		if err != nil {
 			return nil, err
@@ -89,6 +89,10 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 	}
 
 	if backendConfig.File != nil {
+		if len(backendConfig.File.Routes) == 0 {
+			return nil, errRoutesNotProvided
+		}
+
 		// If the paths are not absolute,
 		// They should be parsed with respect to the current path
 		for j, p := range backendConfig.File.Paths {
@@ -103,6 +107,10 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 	}
 
 	if backendConfig.ElasticSearch != nil {
+		if len(backendConfig.ElasticSearch.Routes) == 0 {
+			return nil, errRoutesNotProvided
+		}
+
 		cfg, err := getElasticConfig(kommonsClient, backendConfig.ElasticSearch)
 		if err != nil {
 			return nil, fmt.Errorf("error getting the elastic search config: %w", err)
@@ -132,6 +140,10 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 	}
 
 	if backendConfig.OpenSearch != nil {
+		if len(backendConfig.OpenSearch.Routes) == 0 {
+			return nil, errRoutesNotProvided
+		}
+
 		cfg, err := getOpenSearchConfig(kommonsClient, backendConfig.OpenSearch)
 		if err != nil {
 			return nil, fmt.Errorf("error getting the openSearch config: %w", err)

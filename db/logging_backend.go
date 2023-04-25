@@ -63,7 +63,7 @@ func GetLoggingBackendsSpecs() ([]logs.SearchBackendConfig, error) {
 		var spec apiv1.LoggingBackendSpec
 		err := json.Unmarshal([]byte(dbBackend.Spec), &spec)
 		if err != nil {
-			logger.Errorf("")
+			logger.Errorf("failed to marshall backend spec:%s due to error:%v", dbBackend.ID, err)
 			continue
 		}
 
