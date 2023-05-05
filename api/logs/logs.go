@@ -25,6 +25,7 @@ type SearchConfig struct {
 type SearchBackendConfig struct {
 	ElasticSearch *ElasticSearchBackendConfig    `json:"elasticsearch,omitempty" yaml:"elasticsearch,omitempty"`
 	OpenSearch    *OpenSearchBackendConfig       `json:"opensearch,omitempty" yaml:"opensearch,omitempty"`
+	CloudWatch    *CloudWatchBackendConfig       `json:"cloudwatch,omitempty" yaml:"cloudwatch,omitempty"`
 	Kubernetes    *KubernetesSearchBackendConfig `json:"kubernetes,omitempty" yaml:"kubernetes,omitempty"`
 	File          *FileSearchBackendConfig       `json:"file,omitempty" yaml:"file,omitempty"`
 }
@@ -107,6 +108,21 @@ type KubernetesSearchBackendConfig struct {
 type FileSearchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
 	Paths         []string `yaml:"path,omitempty" json:"path,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type AWSAuthentication struct {
+	Region    string          `yaml:"region,omitempty" json:"region,omitempty"`
+	AccessKey *kommons.EnvVar `yaml:"access_key,omitempty" json:"access_key,omitempty"`
+	SecretKey *kommons.EnvVar `yaml:"secret_key,omitempty" json:"secret_key,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type CloudWatchBackendConfig struct {
+	CommonBackend `json:",inline" yaml:",inline"`
+	LogGroup      string            `yaml:"log_group,omitempty" json:"log_group,omitempty"`
+	Namespace     string            `yaml:"namespace,omitempty" json:"namespace,omitempty"` // Namespace to search the kommons.EnvVar in
+	Auth          AWSAuthentication `yaml:"auth,omitempty" json:"auth,omitempty"`
 }
 
 // +kubebuilder:object:generate=true

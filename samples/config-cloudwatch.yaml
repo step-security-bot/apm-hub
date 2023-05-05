@@ -1,0 +1,12 @@
+backends:
+  - cloudwatch:
+      routes:
+        - idPrefix: "cluster-main"
+      log_group: "/aws-glue/crawlers"
+      auth:
+        region: us-east-1
+        access_key:
+          value: "MY_ACCESS_KEY"
+        secret_key:
+          value: "MY_SECRET_KEY"
+          
