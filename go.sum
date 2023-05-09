@@ -1038,8 +1038,8 @@ github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSw
 github.com/fergusstrange/embedded-postgres v1.21.0 h1:Sups0nR31+OB4iOZ0ZU4IwUDsB+dVGmcqj4S2ko0qTI=
 github.com/flanksource/commons v1.7.0 h1:B87CrUFM2hcAkiJey5ermZESW7guM6ia2Z67AOeA7hQ=
 github.com/flanksource/commons v1.7.0/go.mod h1:f9gxPkf6psRWWADpVutZ4hedPrgbIJfV3WoZWQQzgxE=
-github.com/flanksource/duty v1.0.59 h1:WkIPjJwrq06EdZbupHlmL9ADpJ6ce7mcJ01oHoIdFDA=
-github.com/flanksource/duty v1.0.59/go.mod h1:Xzlp3Q3OGyT7wRKUxji7jNcj9XZKZ30kgFHMzPrFXpY=
+github.com/flanksource/duty v1.0.82 h1:0/Q2eM1Dio55UpBRly6sTCEO+D9PuDK27XraY1cM64g=
+github.com/flanksource/duty v1.0.82/go.mod h1:24yLs8kOqjSsgrXdLpKu2ea6HX/kdWmx4RDs5jbQ9kE=
 github.com/flanksource/gomplate/v3 v3.20.1/go.mod h1:LPpzujBIg9HBXRUngDKK/zNmEjHpEUieKa/2oRjkCzI=
 github.com/flanksource/gomplate/v3 v3.20.3 h1:mnNaO37uwvv8Kvi4Xswj1tHKP5UMre3FLNaKvAwqhSw=
 github.com/flanksource/gomplate/v3 v3.20.3/go.mod h1:l4iCvp30TdhZk89eRGuNkPwlRjJLXdUSblr+VyuZfAk=
@@ -2175,6 +2175,7 @@ github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca/go.mod h1:ce1O1j6Ut
 github.com/xlab/treeprint v1.1.0 h1:G/1DjNkPpfZCFt9CSh6b5/nY4VimlbHF3Rh4obvtzDk=
 github.com/xlab/treeprint v1.1.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
+github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2 h1:zzrxE1FKn5ryBNl9eKOeqQ58Y/Qpo3Q9QNxKHX5uzzQ=
 github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d/go.mod h1:rHwXgn7JulP+udvsHwJoVG1YGAP6VLg4y9I5dyZdqmA=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
