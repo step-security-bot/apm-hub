@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.6.0
 	github.com/flanksource/commons v1.7.0
-	github.com/flanksource/duty v1.0.59
+	github.com/flanksource/duty v1.0.82
 	github.com/flanksource/kommons v0.31.1
 	github.com/go-logr/logr v1.2.4
 	github.com/go-logr/zapr v1.2.3
