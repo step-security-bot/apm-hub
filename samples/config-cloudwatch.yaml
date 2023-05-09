@@ -3,6 +3,7 @@ backends:
       routes:
         - idPrefix: "cluster-main"
       log_group: "/aws-glue/crawlers"
+      query: fields @id, @timestamp, @message | sort @timestamp desc
       auth:
         region: us-east-1
         access_key:

@@ -120,9 +120,10 @@ type AWSAuthentication struct {
 // +kubebuilder:object:generate=true
 type CloudWatchBackendConfig struct {
 	CommonBackend `json:",inline" yaml:",inline"`
-	LogGroup      string            `yaml:"log_group,omitempty" json:"log_group,omitempty"`
-	Namespace     string            `yaml:"namespace,omitempty" json:"namespace,omitempty"` // Namespace to search the kommons.EnvVar in
 	Auth          AWSAuthentication `yaml:"auth,omitempty" json:"auth,omitempty"`
+	Namespace     string            `yaml:"namespace,omitempty" json:"namespace,omitempty"` // Namespace to search the kommons.EnvVar in
+	LogGroup      string            `yaml:"log_group,omitempty" json:"log_group,omitempty"`
+	Query         string            `yaml:"query,omitempty" json:"query,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
