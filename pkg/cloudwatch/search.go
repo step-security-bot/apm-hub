@@ -63,15 +63,17 @@ func (t *cloudWatchSearch) Search(q *logs.SearchParams) (logs.SearchResults, err
 		}
 
 		for _, field := range fields {
-			switch *field.Field {
+			switch deref(field.Field) {
 			case "@message":
 				event.Message = deref(field.Value)
 			case "@timestamp":
 				event.Time = toRFC339(deref(field.Value))
 			case "@ptr": // the value to use as logRecordPointer to retrieve that complete log event record.
 				event.Id = deref(field.Value)
+			case "":
+				// Do nothing
 			default:
-				// Discard other fields ... ?
+				event.Labels[deref(field.Field)] = deref(field.Value)
 			}
 		}
 
