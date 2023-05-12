@@ -1,13 +1,18 @@
 package pkg
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	v8 "github.com/elastic/go-elasticsearch/v8"
 	"github.com/flanksource/apm-hub/api/logs"
 	"github.com/flanksource/apm-hub/db"
+	"github.com/flanksource/apm-hub/pkg/cloudwatch"
 	"github.com/flanksource/apm-hub/pkg/elasticsearch"
 	"github.com/flanksource/apm-hub/pkg/files"
 	k8s "github.com/flanksource/apm-hub/pkg/kubernetes"
@@ -169,6 +174,51 @@ func getBackendsFromConfigs(kommonsClient *kommons.Client, backendConfig logs.Se
 		}
 
 		backend := logs.NewSearchBackend(osBackend)
+		backends = append(backends, backend)
+	}
+
+	if backendConfig.CloudWatch != nil {
+		_, accessKey, err := kommonsClient.GetEnvValue(*backendConfig.CloudWatch.Auth.AccessKey, backendConfig.CloudWatch.Namespace)
+		if err != nil {
+			return nil, err
+		}
+
+		_, secretKey, err := kommonsClient.GetEnvValue(*backendConfig.CloudWatch.Auth.SecretKey, backendConfig.CloudWatch.Namespace)
+		if err != nil {
+			return nil, err
+		}
+
+		cfg, err := config.LoadDefaultConfig(context.Background(),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
+			config.WithRegion(backendConfig.CloudWatch.Auth.Region),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error creating aws config: %w", err)
+		}
+
+		client := cloudwatchlogs.NewFromConfig(cfg)
+
+		// Make a request to verify that the auth & log group is valid.
+		resp, err := client.DescribeLogGroups(context.Background(), &cloudwatchlogs.DescribeLogGroupsInput{LogGroupNamePrefix: &backendConfig.CloudWatch.LogGroup})
+		if err != nil {
+			return nil, fmt.Errorf("error querying log group: %w", err)
+		}
+
+		var logGroupExists bool
+		for _, group := range resp.LogGroups {
+			if *group.LogGroupName == backendConfig.CloudWatch.LogGroup {
+				logGroupExists = true
+				break
+			}
+		}
+
+		if !logGroupExists {
+			return nil, fmt.Errorf("log group %s does not exist", backendConfig.CloudWatch.LogGroup)
+		}
+
+		cloudwatch := cloudwatch.NewCloudWatchSearchBackend(backendConfig.CloudWatch, client)
+
+		backend := logs.NewSearchBackend(cloudwatch)
 		backends = append(backends, backend)
 	}
 
