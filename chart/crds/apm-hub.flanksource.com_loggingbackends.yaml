@@ -38,6 +38,106 @@ spec:
               backends:
                 items:
                   properties:
+                    cloudwatch:
+                      properties:
+                        auth:
+                          properties:
+                            access_key:
+                              properties:
+                                name:
+                                  type: string
+                                value:
+                                  type: string
+                                valueFrom:
+                                  properties:
+                                    configMapKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                  type: object
+                              type: object
+                            region:
+                              type: string
+                            secret_key:
+                              properties:
+                                name:
+                                  type: string
+                                value:
+                                  type: string
+                                valueFrom:
+                                  properties:
+                                    configMapKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                    secretKeyRef:
+                                      properties:
+                                        key:
+                                          type: string
+                                        name:
+                                          type: string
+                                        optional:
+                                          type: boolean
+                                      required:
+                                      - key
+                                      type: object
+                                  type: object
+                              type: object
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels are custom labels specified in the configuration
+                            file for a backend that will be attached to each log line
+                            returned by that backend.
+                          type: object
+                        log_group:
+                          type: string
+                        namespace:
+                          type: string
+                        query:
+                          type: string
+                        routes:
+                          items:
+                            properties:
+                              id_prefix:
+                                type: string
+                              is_additive:
+                                type: boolean
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                type: object
+                              type:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
                     elasticsearch:
                       properties:
                         address:
