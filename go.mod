@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.11
 	github.com/elastic/go-elasticsearch/v8 v8.6.0
 	github.com/flanksource/commons v1.10.0
-	github.com/flanksource/duty v1.0.104
+	github.com/flanksource/duty v1.0.113
 	github.com/flanksource/kommons v0.31.1
 	github.com/go-logr/logr v1.2.4
 	github.com/go-logr/zapr v1.2.3
